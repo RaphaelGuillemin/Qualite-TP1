@@ -9,6 +9,8 @@ public class Class {
     private int classe_DC;
     // Méthodes de la classe
     private ArrayList<Method> methods = new ArrayList<Method>();
+    // Nom de la classe
+    private String name;
 
     /*
      * @returns classe_LOC
@@ -58,5 +60,13 @@ public class Class {
 
     public ArrayList<Method> getMethods(){
         return this.methods;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Class(String name) {
+        this.name = name;
     }
 }

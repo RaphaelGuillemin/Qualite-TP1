@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Method {
     // Nombre de lignes de code d’une méthode
     private int methode_LOC;
@@ -5,7 +7,10 @@ public class Method {
     private int methode_CLOC;
     // Densité de commentaires pour une méthode : methode_DC = methode_CLOC / methode_LOC
     private int methode_DC;
-
+    // Nom de la méthode
+    private String name;
+    // Arguments de la méthode
+    private ArrayList<String> args = new ArrayList<String>();
     /*
      * @returns methode_LOC
      */
@@ -48,4 +53,19 @@ public class Method {
         this.methode_DC = this.methode_CLOC / this.methode_LOC;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Method(String name) {
+        this.name = name;
+    }
+
+    public ArrayList<String> getArgs() {
+        return args;
+    }
+
+    public void addArgs(String arg) {
+        this.args.add(arg);
+    }
 }
