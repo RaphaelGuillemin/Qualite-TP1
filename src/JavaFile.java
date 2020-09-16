@@ -4,7 +4,7 @@ public class JavaFile {
     // Ensemble des classes du fichier java
     private ArrayList<Class> classes = new ArrayList<Class>();
     // Nom du fichier java
-    private String path;
+    private String name;
 
     public void addClass(Class classe){
         classes.add(classe);
@@ -14,11 +14,11 @@ public class JavaFile {
         return this.classes;
     }
 
-    public String getPath() {
-        return this.path;
+    public String getName() {
+        return this.name;
     }
 
     public JavaFile(String name){
-        this.path = name;
+        this.name = name;
     }
 }
