@@ -1,15 +1,23 @@
 import java.io.Serializable;
 
 public class Main {
+  /* this is a comment*/
+  /*
+  this
+  is
+  also a comment
+   */
 
-  public static int somme(float a, float b) {
+  public static int somme(float a, float b) /* this could be a comment too */ {
     float c = a + b;
-    return (int) c;
+    return (int) c; //another comment
   }
+  //this is a comment for the next method
   public static int max(int[] nums) {
     int max = 0;
     for(int i=0; i<nums.length; i++) {
-      max = Math.max(nums[i], max);
+      max = Math.max(nums[i], max); /* this
+      could be a comment*/
     }
     return max;
   }

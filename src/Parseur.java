@@ -14,7 +14,7 @@ public class Parseur {
     static private String folderPath;
 
     //TODO REMOVE THIS BEFORE SENDING
-    public static void print(String str){
+    public static void print(Object str){
         System.out.println(str);
     }
 
@@ -70,14 +70,184 @@ public class Parseur {
             boolean inClass = false;
             boolean inMethod = false;
             boolean inComment = false;
+
+            Class classe = null;
+            Method method = null;
+
+            int classCount = 0;
+            int methodCount = 0;
+            int classCommentCount = 0;
+            int methodCommentCount = 0;
+            int ignoreCount = 0;
+            int commentCount = 0;
+
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+                // Ligne vide
                 if(line.equals("")){
+                    commentCount = 0;
                     continue;
+                // Commentaire et javadoc
+                } else if(inComment || line.trim().startsWith("//") || line.trim().startsWith("/*")
+                        || line.trim().startsWith("@")) {
+                    if(line.trim().startsWith("/*")){
+                        inComment = true;
+                    }
+                    if(inClass){
+                        classCommentCount++;
+                        if(inMethod){
+                            methodCommentCount++;
+                        } else {
+                            commentCount++;
+                        }
+                    } else {
+                        commentCount++;
+                    }
+                    if(line.contains("*/")){
+                        inComment = false;
+                    }
+                // Ligne de code
                 } else {
-                    print(line);
+                    // nouvelle classe
+                    if (line.contains("class")){
+                        inClass = true;
+                        String name = line.substring(line.indexOf("class"), line.indexOf('{')).split(" ")[1];
+                        classe = new Class(name);
+                        if(commentCount > 0){
+                            classCommentCount = commentCount;
+                            commentCount = 0;
+                        }
+                        // Vérifier si ligne contient un commentaire
+                        if(line.contains("//")){
+                            classCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            classCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
+                        continue;
+                    }
+                    // nouvelle méthode
+                    if (line.contains("{") && inClass && !inMethod){
+                        inMethod = true;
+                        String nameAndArgs = line.trim().split(" ")[3];
+                        String name = nameAndArgs.split("[(]")[0];
+                        classCount++;
+                        if(commentCount > 0){
+                            methodCommentCount = commentCount;
+                            commentCount = 0;
+                        }
+                        // Vérifier si ligne contient un commentaire
+                        if(line.contains("//")){
+                            methodCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            methodCommentCount++;
+                            classCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
+                        method = new Method(name);
+                        continue;
+                    // Cas de ligne de code contenant des {} sur la meme ligne
+                    } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
+                        classCount++;
+                        methodCount++;
+                        continue;
+                    // Cas ou la ligne de code contient uniquement un { (par exemple: for et while)
+                    } else if (line.contains("{") && inClass && inMethod){
+                        ignoreCount++;
+                        methodCount++;
+                        classCount++;
+                        continue;
+                    }
+                    // Cas ou l'on fini une boucle
+                    if (line.contains("}") && ignoreCount > 0){
+                        ignoreCount--;
+                        methodCount++;
+                        classCount++;
+                        continue;
+                    }
+                    // fin de classe
+                    if (inClass && !inMethod && line.contains("}") && ignoreCount == 0){
+                        inClass = false;
+                        classe.setClasse_LOC(classCount);
+                        classCount = 0;
+                        // Vérifier si ligne contient un commentaire
+                        if(line.contains("//")){
+                            classCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            classCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
+                        classe.setClasse_CLOC(classCommentCount);
+                        classCommentCount = 0;
+                        classe.setClasse_DC();
+                        javaFile.addClass(classe);
+                        classe = null;
+                    }
+                    // fin de méthode
+                    if (inMethod && line.contains("}") && ignoreCount == 0){
+                        inMethod = false;
+                        method.setMethode_LOC(methodCount);
+                        methodCount = 0;
+                        // Vérifier si ligne contient un commentaire
+                        if(line.contains("//")){
+                            methodCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            methodCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
+                        method.setMethode_CLOC(methodCommentCount);
+                        methodCommentCount = 0;
+                        method.setMethode_DC();
+                        classe.addMethod(method);
+                        method = null;
+                    }
+                    // ligne de code d'une classe
+                    if (inClass){
+                        classCount++;
+                        // Vérifier si ligne contient un commentaire
+                        if(line.contains("//")){
+                            classCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            classCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
+                    }
+                    // ligne de code d'une méthode
+                    if (inMethod){
+                        methodCount++;
+                        // Vérifier si ligne contient un commentaire
+                        if(line.contains("//")){
+                            methodCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            methodCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
+                    }
                 }
-
             }
             scanner.close();
         }
@@ -85,6 +255,7 @@ public class Parseur {
         {
             e.printStackTrace();
         }
+        print(javaFile.getClasses().get(0).getClasse_LOC());
         return javaFile;
     }
 
