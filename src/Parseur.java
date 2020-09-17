@@ -133,8 +133,9 @@ public class Parseur {
                     // nouvelle méthode
                     if (line.contains("{") && inClass && !inMethod){
                         inMethod = true;
-                        String nameAndArgs = line.trim().split(" ")[3];
-                        String name = nameAndArgs.split("[(]")[0];
+                        ArrayList<ArrayList<String>> nameAndArgs = getNameAndArgs(line.trim());
+                        String name = nameAndArgs.get(0).get(0);
+                        ArrayList<String> args = nameAndArgs.get(1);
                         classCount++;
                         if(commentCount > 0){
                             methodCommentCount = commentCount;
@@ -152,7 +153,7 @@ public class Parseur {
                                 inComment = false;
                             }
                         }
-                        method = new Method(name);
+                        method = new Method(name,args);
                         continue;
                     // Cas de ligne de code contenant des {} sur la meme ligne
                     } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
@@ -257,6 +258,31 @@ public class Parseur {
         }
         print(javaFile.getClasses().get(0).getClasse_LOC());
         return javaFile;
+    }
+
+    /*
+     * @param ligne qui contient le nom et les arguments de la méthode
+     * @return Arraylist de [[nom], [arguments]]
+     */
+    public static ArrayList<ArrayList<String>> getNameAndArgs(String line){
+        ArrayList<ArrayList<String>> tab = new ArrayList<ArrayList<String>>();
+        ArrayList<String> name = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<String>();
+
+        String[] parts = line.split(" ");
+        for (String part : parts){
+            if(part.contains("(")){
+                name.add(part.split("[(]")[0]);
+            }
+        }
+
+        String[] arguments = line.substring(line.indexOf("(") + 1, line.indexOf(')')).split(" ");
+        for(int i=0; i < arguments.length; i+=2){
+            args.add(arguments[i]);
+        }
+        tab.add(name);
+        tab.add(args);
+        return tab;
     }
 
     /*
