@@ -70,14 +70,17 @@ public class Parseur {
             boolean inClass = false;
             boolean inMethod = false;
             boolean inComment = false;
+
             Class classe = null;
             Method method = null;
+
             int classCount = 0;
             int methodCount = 0;
             int classCommentCount = 0;
             int methodCommentCount = 0;
             int ignoreCount = 0;
             int commentCount = 0;
+
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 // Ligne vide
@@ -114,6 +117,7 @@ public class Parseur {
                             classCommentCount = commentCount;
                             commentCount = 0;
                         }
+                        // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             classCommentCount++;
                         }
@@ -136,6 +140,7 @@ public class Parseur {
                             methodCommentCount = commentCount;
                             commentCount = 0;
                         }
+                        // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             methodCommentCount++;
                         }
@@ -149,28 +154,31 @@ public class Parseur {
                         }
                         method = new Method(name);
                         continue;
-                    }
-                    else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
+                    // Cas de ligne de code contenant des {} sur la meme ligne
+                    } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
                         classCount++;
                         methodCount++;
                         continue;
-                    }
-                    else if (line.contains("{") && inClass && inMethod){
+                    // Cas ou la ligne de code contient uniquement un { (par exemple: for et while)
+                    } else if (line.contains("{") && inClass && inMethod){
                         ignoreCount++;
                         methodCount++;
                         classCount++;
                         continue;
                     }
+                    // Cas ou l'on fini une boucle
                     if (line.contains("}") && ignoreCount > 0){
                         ignoreCount--;
                         methodCount++;
                         classCount++;
                         continue;
                     }
+                    // fin de classe
                     if (inClass && !inMethod && line.contains("}") && ignoreCount == 0){
                         inClass = false;
                         classe.setClasse_LOC(classCount);
                         classCount = 0;
+                        // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             classCommentCount++;
                         }
@@ -187,10 +195,12 @@ public class Parseur {
                         javaFile.addClass(classe);
                         classe = null;
                     }
+                    // fin de méthode
                     if (inMethod && line.contains("}") && ignoreCount == 0){
                         inMethod = false;
                         method.setMethode_LOC(methodCount);
                         methodCount = 0;
+                        // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             methodCommentCount++;
                         }
@@ -207,8 +217,10 @@ public class Parseur {
                         classe.addMethod(method);
                         method = null;
                     }
+                    // ligne de code d'une classe
                     if (inClass){
                         classCount++;
+                        // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             classCommentCount++;
                         }
@@ -220,8 +232,10 @@ public class Parseur {
                             }
                         }
                     }
+                    // ligne de code d'une méthode
                     if (inMethod){
                         methodCount++;
+                        // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             methodCommentCount++;
                         }
@@ -234,7 +248,6 @@ public class Parseur {
                         }
                     }
                 }
-
             }
             scanner.close();
         }
