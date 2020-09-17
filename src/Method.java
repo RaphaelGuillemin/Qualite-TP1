@@ -6,7 +6,7 @@ public class Method {
     // Nombre de lignes de code d’une méthode qui contiennent des commentaires
     private int methode_CLOC;
     // Densité de commentaires pour une méthode : methode_DC = methode_CLOC / methode_LOC
-    private int methode_DC;
+    private float methode_DC;
     // Nom de la méthode
     private String name;
     // Arguments de la méthode
@@ -42,7 +42,7 @@ public class Method {
     /*
      * @returns methode_DC
      */
-    public int getMethode_DC() {
+    public float getMethode_DC() {
         return methode_DC;
     }
 
@@ -50,7 +50,7 @@ public class Method {
      * Calcule la densité de commentaires pour une méthode
      */
     public void setMethode_DC() {
-        this.methode_DC = this.methode_CLOC / this.methode_LOC;
+        this.methode_DC = (float)this.methode_CLOC / (float)this.methode_LOC;
     }
 
     public String getName() {

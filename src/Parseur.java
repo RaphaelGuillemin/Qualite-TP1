@@ -92,9 +92,10 @@ public class Parseur {
                     }
                     if(inClass){
                         classCommentCount++;
-                        commentCount++;
                         if(inMethod){
                             methodCommentCount++;
+                        } else {
+                            commentCount++;
                         }
                     } else {
                         commentCount++;
@@ -113,6 +114,16 @@ public class Parseur {
                             classCommentCount = commentCount;
                             commentCount = 0;
                         }
+                        if(line.contains("//")){
+                            classCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            classCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
+                        }
                         continue;
                     }
                     // nouvelle méthode
@@ -124,6 +135,17 @@ public class Parseur {
                         if(commentCount > 0){
                             methodCommentCount = commentCount;
                             commentCount = 0;
+                        }
+                        if(line.contains("//")){
+                            methodCommentCount++;
+                        }
+                        if(line.contains("/*")){
+                            inComment = true;
+                            methodCommentCount++;
+                            classCommentCount++;
+                            if (line.contains("*/")){
+                                inComment = false;
+                            }
                         }
                         method = new Method(name);
                         continue;

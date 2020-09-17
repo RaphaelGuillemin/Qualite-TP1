@@ -6,7 +6,7 @@ public class Class {
     // Nombre de lignes de code d’une classe qui contiennent des commentaires
     private int classe_CLOC;
     // Densité de commentaires pour une classe : classe_DC = classe_CLOC / classe_LOC
-    private int classe_DC;
+    private float classe_DC;
     // Méthodes de la classe
     private ArrayList<Method> methods = new ArrayList<Method>();
     // Nom de la classe
@@ -43,7 +43,7 @@ public class Class {
     /*
      * @returns classe_DC
      */
-    public int getClasse_DC() {
+    public float getClasse_DC() {
         return classe_DC;
     }
 
@@ -51,7 +51,7 @@ public class Class {
      * @param classe_DC
      */
     public void setClasse_DC() {
-        this.classe_DC = this.classe_CLOC / this.classe_LOC;
+        this.classe_DC = (float)this.classe_CLOC / (float)this.classe_LOC;
     }
 
     public void addMethod(Method method) {
