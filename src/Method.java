@@ -57,15 +57,12 @@ public class Method {
         return name;
     }
 
-    public Method(String name) {
+    public Method(String name, ArrayList<String> args) {
         this.name = name;
+        this.args = args;
     }
 
     public ArrayList<String> getArgs() {
         return args;
-    }
-
-    public void addArgs(String arg) {
-        this.args.add(arg);
     }
 }

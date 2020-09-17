@@ -3,7 +3,9 @@
  */
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -133,8 +135,9 @@ public class Parseur {
                     // nouvelle méthode
                     if (line.contains("{") && inClass && !inMethod){
                         inMethod = true;
-                        String nameAndArgs = line.trim().split(" ")[3];
-                        String name = nameAndArgs.split("[(]")[0];
+                        ArrayList<ArrayList<String>> nameAndArgs = getNameAndArgs(line.trim());
+                        String name = nameAndArgs.get(0).get(0);
+                        ArrayList<String> args = nameAndArgs.get(1);
                         classCount++;
                         if(commentCount > 0){
                             methodCommentCount = commentCount;
@@ -152,7 +155,7 @@ public class Parseur {
                                 inComment = false;
                             }
                         }
-                        method = new Method(name);
+                        method = new Method(name,args);
                         continue;
                     // Cas de ligne de code contenant des {} sur la meme ligne
                     } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
@@ -255,14 +258,75 @@ public class Parseur {
         {
             e.printStackTrace();
         }
-        print(javaFile.getClasses().get(0).getClasse_LOC());
         return javaFile;
     }
 
     /*
-     * Créé le fichier csv contenant toutes les informations des fichiers java
+     * @param ligne qui contient le nom et les arguments de la méthode
+     * @return Arraylist de [[nom], [arguments]]
+     */
+    public static ArrayList<ArrayList<String>> getNameAndArgs(String line){
+        ArrayList<ArrayList<String>> tab = new ArrayList<ArrayList<String>>();
+        ArrayList<String> name = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<String>();
+
+        String[] parts = line.split(" ");
+        for (String part : parts){
+            if(part.contains("(")){
+                name.add(part.split("[(]")[0]);
+            }
+        }
+
+        String[] arguments = line.substring(line.indexOf("(") + 1, line.indexOf(')')).split(" ");
+        for(int i=0; i < arguments.length; i+=2){
+            args.add(arguments[i]);
+        }
+        tab.add(name);
+        tab.add(args);
+        return tab;
+    }
+
+    /*
+     * Créé les fichiers csv contenant toutes les informations des fichiers java
      */
     public static void createCSVFile(){
+        // Classes
+        try (PrintWriter writer = new PrintWriter(new File("classes.csv"))) {
+            StringBuilder output = new StringBuilder();
+            output.append("chemin, class, classe_LOC, classe_CLOC, classe_DC\n");
+            for(JavaFile javaFile: javaFiles){
+                output.append(folderPath + '/' + javaFile.getName() + ", ");
+                Class classe = javaFile.getClasses().get(0);
+                output.append(classe.getName() + ", " +  classe.getClasse_LOC() + ", " + classe.getClasse_CLOC() + ", " + classe.getClasse_DC());
+                output.append('\n');
+            }
+
+            writer.write(output.toString());
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // Méthode
+        try (PrintWriter writer = new PrintWriter(new File("methodes.csv"))) {
+            StringBuilder output = new StringBuilder();
+            output.append("chemin, class, methode1, methode_LOC, methode_CLOC, methode_DC\n");
+            for(JavaFile javaFile: javaFiles){
+                Class classe = javaFile.getClasses().get(0);
+                ArrayList<Method> methods = classe.getMethods();
+                for(Method method : methods){
+                    output.append(folderPath + '/' + javaFile.getName() + ", ");
+                    output.append(classe.getName() + ", ");
+                    String name = method.getName();
+                    for (String arg : method.getArgs()){
+                        name += ('_' + arg);
+                    }
+                    output.append(name + ", " +  method.getMethode_LOC() + ", " + method.getMethode_CLOC() + ", " + method.getMethode_DC() + '\n');
+                }
+            }
+            writer.write(output.toString());
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
 
     }
 }
