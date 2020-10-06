@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Parseur {
+public class Parser {
     // Ensemble des fichiers java du dossier
     static private ArrayList<JavaFile> javaFiles = new ArrayList<JavaFile>();
     // Name of the folder to be read from
@@ -49,7 +49,7 @@ public class Parseur {
         }
         // Déterminer si le dossier est vide
         else if (filesFolder.length == 0){
-            System.err.println("Ce dossier ne contient aucun fichier java");
+            System.err.println("Ce dossier ne contient aucun fichier java.");
             return;
         }
 
@@ -58,7 +58,7 @@ public class Parseur {
             File javaFile = new File(folderPath + '/' + file.getName());
             javaFiles.add(parseNewFile(javaFile));
         }
-        createCSVFile();
+        createCSVFiles();
     }
 
     /*
@@ -80,7 +80,7 @@ public class Parseur {
             int methodCount = 0;
             int classCommentCount = 0;
             int methodCommentCount = 0;
-            int ignoreCount = 0;
+            int ignoreCount = 0; // Nombre de fois que l'on rencontre un { dans une méthode
             int commentCount = 0;
 
             while (scanner.hasNextLine()) {
@@ -111,10 +111,11 @@ public class Parseur {
                 // Ligne de code
                 } else {
                     // nouvelle classe
-                    if (line.contains("class")){
+                    if (line.contains("class") && !line.trim().startsWith("//") && !line.trim().startsWith("/*") && !line.trim().startsWith("}")){
                         inClass = true;
                         String name = line.substring(line.indexOf("class"), line.indexOf('{')).split(" ")[1];
                         classe = new Class(name);
+                        // Si commentaire juste avant la classe, il sera considéré dans le compte des commentaires de la classe
                         if(commentCount > 0){
                             classCommentCount = commentCount;
                             commentCount = 0;
@@ -169,7 +170,7 @@ public class Parseur {
                         classCount++;
                         continue;
                     }
-                    // Cas ou l'on fini une boucle
+                    // Cas ou l'on finit une boucle
                     if (line.contains("}") && ignoreCount > 0){
                         ignoreCount--;
                         methodCount++;
@@ -197,6 +198,7 @@ public class Parseur {
                         classe.setClasse_DC();
                         javaFile.addClass(classe);
                         classe = null;
+                        continue;
                     }
                     // fin de méthode
                     if (inMethod && line.contains("}") && ignoreCount == 0){
@@ -289,7 +291,7 @@ public class Parseur {
     /*
      * Créé les fichiers csv contenant toutes les informations des fichiers java
      */
-    public static void createCSVFile(){
+    public static void createCSVFiles(){
         // Classes
         try (PrintWriter writer = new PrintWriter(new File("classes.csv"))) {
             StringBuilder output = new StringBuilder();
@@ -309,7 +311,7 @@ public class Parseur {
         // Méthode
         try (PrintWriter writer = new PrintWriter(new File("methodes.csv"))) {
             StringBuilder output = new StringBuilder();
-            output.append("chemin, class, methode1, methode_LOC, methode_CLOC, methode_DC\n");
+            output.append("chemin, class, methode, methode_LOC, methode_CLOC, methode_DC\n");
             for(JavaFile javaFile: javaFiles){
                 Class classe = javaFile.getClasses().get(0);
                 ArrayList<Method> methods = classe.getMethods();

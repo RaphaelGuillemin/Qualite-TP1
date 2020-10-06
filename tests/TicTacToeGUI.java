@@ -9,7 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class TicTacToeGUI extends Application {
+public class TicTacToeGUI extends Application { // Commentaire
 
     private Text status;
     private String lettre;
@@ -121,7 +121,7 @@ public class TicTacToeGUI extends Application {
             System.exit(0);
         });
         primaryStage.show();
-    }
+    } /* commentaire */
 
     private void setTextButton(String str){
         Platform.runLater(() -> {
@@ -130,7 +130,7 @@ public class TicTacToeGUI extends Application {
           }
         });
 
-    }
+    } // commentaire
 
     private void setStatus(String str) {
         /**
@@ -144,4 +144,6 @@ public class TicTacToeGUI extends Application {
             status.setText(str);
         });
     }
-}
+} /*
+fin de classe
+*/

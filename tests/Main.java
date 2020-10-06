@@ -1,6 +1,7 @@
+/* Commentaire avant import */
 import java.io.Serializable;
-
-public class Main {
+// Commentaire avant la classe
+public class Main { /* commentaire */
   /* this is a comment*/
   /*
   this
@@ -13,7 +14,7 @@ public class Main {
     return (int) c; //another comment
   }
   //this is a comment for the next method
-  public static int max(int[] nums) {
+  public static int max(int[] nums) { // Commentaire
     int max = 0;
     for(int i=0; i<nums.length; i++) {
       max = Math.max(nums[i], max); /* this
@@ -48,5 +49,6 @@ public class Main {
 // *** Affiche :
     System.out.println(fooTab.egal(fooTab));
 // *** Affiche :
+
   }
-}
+} // fin de classe
