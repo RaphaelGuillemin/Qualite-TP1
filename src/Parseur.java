@@ -1,4 +1,4 @@
-/* @Author Laura Bégin ()
+/* @Author Laura Bégin (p1164844, 20093040)
  * @Author Raphaël Guillemin (p1202392, 20129638)
  */
 
