@@ -37,7 +37,7 @@ public class Class {
     public void computeWMC() {
         int sum = 0;
         for (Method method : this.methods) {
-            sum += method.getCyclomaticComplexity();
+            sum += method.getCC();
         }
         this.WMC = sum;
     }
