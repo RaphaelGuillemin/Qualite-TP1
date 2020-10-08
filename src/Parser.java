@@ -72,6 +72,7 @@ public class Parser {
             boolean inClass = false;
             boolean inMethod = false;
             boolean inComment = false;
+            boolean inSwitch = false;
 
             Class classe = null;
             Method method = null;
@@ -81,10 +82,27 @@ public class Parser {
             int classCommentCount = 0;
             int methodCommentCount = 0;
             int ignoreCount = 0; // Nombre de fois que l'on rencontre un { dans une méthode
+            int ignoreCountStartSwitch = 0; // Valeur de ignoreCount à l'entrée d'un bloc switch
             int commentCount = 0;
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+                // Compter le nombre de case dans un bloc switch
+                if (inSwitch) {
+                    // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
+                    String nonCommentLine = line.trim();
+                    if (line.contains("//") || line.contains("/*")) {
+                        String[] lineArray = line.split("/{2}|/*");
+                        nonCommentLine = lineArray[0].trim(); // Enlève le whitespace au début de la ligne
+                    }
+                    if (nonCommentLine.startsWith("case")) {
+                        method.incrementNoOfSwitchCases();
+                    }
+                    if (nonCommentLine.contains("}") && ignoreCountStartSwitch == ignoreCount-1) {
+                        inSwitch = false;
+                        ignoreCountStartSwitch = 0;
+                    }
+                }
                 // Ligne vide
                 if(line.equals("")){
                     commentCount = 0;
@@ -92,12 +110,12 @@ public class Parser {
                 // Commentaire et javadoc
                 } else if(inComment || line.trim().startsWith("//") || line.trim().startsWith("/*")
                         || line.trim().startsWith("@")) {
-                    if(line.trim().startsWith("/*")){
+                    if (line.trim().startsWith("/*")) {
                         inComment = true;
                     }
-                    if(inClass){
+                    if (inClass) {
                         classCommentCount++;
-                        if(inMethod){
+                        if (inMethod) {
                             methodCommentCount++;
                         } else {
                             commentCount++;
@@ -105,7 +123,7 @@ public class Parser {
                     } else {
                         commentCount++;
                     }
-                    if(line.contains("*/")){
+                    if (line.contains("*/")) {
                         inComment = false;
                     }
                 // Ligne de code
@@ -162,12 +180,39 @@ public class Parser {
                     } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
                         classCount++;
                         methodCount++;
+                        String nonCommentLine = line.trim();
+                        // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
+                        if (line.contains("//") || line.contains("/*")) {
+                            String[] lineArray = line.split("/{2}|/*");
+                            nonCommentLine = lineArray[0].trim(); // Enlève le whitespace avant la ligne
+                        }
+                        if (nonCommentLine.startsWith("} else if")) {
+                            method.incrementNoOfIfs();
+                        }
                         continue;
-                    // Cas ou la ligne de code contient uniquement un { (par exemple: for et while)
-                    } else if (line.contains("{") && inClass && inMethod){
+                    // Cas ou la ligne de code contient un { (par exemple: for, while, switch, if, etc)
+                    } else if (line.contains("{") && inClass && inMethod) {
                         ignoreCount++;
                         methodCount++;
                         classCount++;
+                        
+                        String nonCommentLine = line.trim();
+                        // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
+                        if (line.contains("//") || line.contains("/*")) {
+                            String[] lineArray = line.split("/{2}|/*");
+                            nonCommentLine = lineArray[0].trim(); // Enlève le whitespace avant la ligne
+                        }
+
+                        if (nonCommentLine.startsWith("if")) {
+                            method.incrementNoOfIfs();
+                        } else if (nonCommentLine.startsWith("switch")) {
+                            inSwitch = true;
+                            ignoreCountStartSwitch = ignoreCount;
+                        } else if (nonCommentLine.startsWith("for")) {
+                            method.incrementNoOfForLoops();
+                        } else if (nonCommentLine.startsWith("while")) {
+                            method.incrementNoOfWhileLoops();
+                        }
                         continue;
                     }
                     // Cas ou l'on finit une boucle
@@ -218,7 +263,8 @@ public class Parser {
                         }
                         method.setMethode_CLOC(methodCommentCount);
                         methodCommentCount = 0;
-                        method.setMethode_DC();
+                        method.computeMethode_DC();
+                        method.computeCyclomaticComplexity();
                         classe.addMethod(method);
                         method = null;
                     }
@@ -252,6 +298,9 @@ public class Parser {
                             }
                         }
                     }
+                }
+                if(inMethod && method != null) {
+
                 }
             }
             scanner.close();
@@ -311,7 +360,7 @@ public class Parser {
         // Méthode
         try (PrintWriter writer = new PrintWriter(new File("methodes.csv"))) {
             StringBuilder output = new StringBuilder();
-            output.append("chemin, class, methode, methode_LOC, methode_CLOC, methode_DC\n");
+            output.append("chemin, class, methode, methode_LOC, methode_CLOC, methode_DC, CC\n");
             for(JavaFile javaFile: javaFiles){
                 Class classe = javaFile.getClasses().get(0);
                 ArrayList<Method> methods = classe.getMethods();
@@ -322,7 +371,11 @@ public class Parser {
                     for (String arg : method.getArgs()){
                         name += ('_' + arg);
                     }
-                    output.append(name + ", " +  method.getMethode_LOC() + ", " + method.getMethode_CLOC() + ", " + method.getMethode_DC() + '\n');
+                    output.append(name + ", "
+                            + method.getMethode_LOC() + ", "
+                            + method.getMethode_CLOC() + ", "
+                            + method.getMethode_DC() + ", "
+                            + method.getCyclomaticComplexity() + '\n');
                 }
             }
             writer.write(output.toString());

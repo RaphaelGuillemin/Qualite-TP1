@@ -11,6 +11,17 @@ public class Main { /* commentaire */
 
   public static int somme(float a, float b) /* this could be a comment too */ {
     float c = a + b;
+    switch (c) {
+      case c = 2:
+        break;
+      case c = 5:
+        for (int i = 0; i < c; i++) {
+          System.out.println("caca");
+          if (c == 2){
+            continue;
+          }
+        }
+    }
     return (int) c; //another comment
   }
   //this is a comment for the next method

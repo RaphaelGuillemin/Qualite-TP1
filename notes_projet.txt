@@ -5,17 +5,22 @@ Un commentaire qui est situé avant une méthode doit être collé à la méthod
 import : pas une ligne de code
 On peut avoir un commentaire d'une seule ligne après le } de fin de classe et de ifn de méthode
 
+On suppose que le programme java suit les conventions. Par exemple, public void test(int a) {for(i=1; i <100; i++) a++;} serait écrit comme :
+public void test(int a) {
+	for(i=1; i <100; i++) a++;
+}
 
 Partie 3
 * Complexité cyclomatique de McCab :
 V(F) = 1 + d où d est le nombre de noeuds prédicats
 Noeuds prédicats = noeud avec au moins 2 sorties
-** if a then A (conditional structure)
-** if a then A else B (conditional structure)
-** switch case (+ 1 per case or default block)
-** while a do A (iterative structure)
-** repeat a until A (iterative structure)
-(boolean condition)
+** if a then A (conditional structure) + 1
+** if a then A else B (conditional structure) +1
+** if a then A else if B then B else C +2
+** switch case (+ 1 per case or default block) +1 par case
+** while a do A (iterative structure) +1
+** repeat a until A (iterative structure) +1
+(boolean condition) (throw, try, catch) ignoré
 https://www.theserverside.com/feature/How-to-calculate-McCabe-cyclomatic-complexity-in-Java
 
 * Weighted methods per class
