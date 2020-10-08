@@ -39,12 +39,10 @@ public class Method {
 
     /**
      * Calcule la complexité cyclomatique de la méthode
-     * @param cyclomaticComplexity complexité cyclomatique de la méthode
      */
-    public int computeCyclomaticComplexity(int cyclomaticComplexity) {
+    public void computeCyclomaticComplexity() {
         this.cyclomaticComplexity = 1 + this.noOfIfs + this.noOfSwitchCases
                 + this.noOfWhileLoops + this.noOfForLoops;
-        return this.cyclomaticComplexity;
     }
 
     /**
@@ -111,10 +109,10 @@ public class Method {
     }
 
     /**
-     * @param noOfIfs Nombre de clauses if dans la méthode
+     * Incrémente noOfIfs
      */
-    public void setNoOfIfs(int noOfIfs) {
-        this.noOfIfs = noOfIfs;
+    public void incrementNoOfIfs() {
+        this.noOfIfs += 1;
     }
 
     /**
@@ -125,10 +123,10 @@ public class Method {
     }
 
     /**
-     * @param noOfSwitchCases Nombre de cases dans les blocs switch de la méthodes
+     * Incrémente noOfSwitchCases
      */
-    public void setNoOfSwitchCases(int noOfSwitchCases) {
-        this.noOfSwitchCases = noOfSwitchCases;
+    public void incrementNoOfSwitchCases() {
+        this.noOfSwitchCases += 1;
     }
 
     /**
@@ -139,11 +137,12 @@ public class Method {
     }
 
     /**
-     * @param noOfWhileLoops Nombre de bloc while ou do-while de la méthode
+     * Incrémente noOfWhileLoops
      */
-    public void setNoOfWhileLoops(int noOfWhileLoops) {
-        this.noOfWhileLoops = noOfWhileLoops;
+    public void incrementNoOfWhileLoops() {
+        this.noOfWhileLoops += 1;
     }
+
 
     /**
      * @return Nombre de boucles for dans la méthode
@@ -153,9 +152,9 @@ public class Method {
     }
 
     /**
-     * @param noOfForLoops Nombre de boucles for dans la méthode
+     * Incrémente noOfForLoops
      */
-    public void setNoOfForLoops(int noOfForLoops) {
-        this.noOfForLoops = noOfForLoops;
+    public void incrementNoOfForLoops() {
+        this.noOfForLoops += 1;
     }
 }
