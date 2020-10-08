@@ -24,7 +24,11 @@ public class Method {
     public Method(String name, ArrayList<String> args) {
         this.name = name;
         this.args = args;
-        this.CC = 0; // Complexité cyclomatique initialisée à 1
+        this.methode_LOC = 0;
+        this.methode_CLOC = 0;
+        this.methode_DC = 0;
+        this.methode_BC = 0;
+        this.CC = 0;
         this.noOfIfs = 0;
         this.noOfSwitchCases = 0;
         this.noOfWhileLoops = 0;
