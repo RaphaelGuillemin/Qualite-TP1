@@ -6,6 +6,7 @@ public class Class {
     private int classe_CLOC; // Nombre de lignes de code d’une classe qui contiennent des commentaires
     private float classe_DC; // Densité de commentaires pour une classe : classe_DC = classe_CLOC / classe_LOC
     private int WMC; // Weighted methods per class : somme pondérée des complexités des méthodes de la classe
+    private float classe_BC; // Degré selon lequel une méthode est bien commentée : classe_BC = classe_DC/WMC
 
     private ArrayList<Method> methods = new ArrayList<Method>(); // Méthodes de la classe
     private String name; // Nom de la classe
@@ -16,13 +17,18 @@ public class Class {
      */
     public Class(String name) {
         this.name = name;
+        this.classe_LOC = 0;
+        this.classe_CLOC = 0;
+        this.classe_DC = 0;
+        this.WMC = 0;
+        this.classe_BC = 0;
     }
 
     /**
      * Calcule la densité de commentaires pour une classe : classe_DC = classe_CLOC / classe_LOC
      */
     public void computeClasse_DC() {
-        this.classe_DC = (float)this.classe_CLOC / (float)this.classe_LOC;
+        this.classe_DC = (float) this.classe_CLOC / (float) this.classe_LOC;
     }
 
     /**
@@ -34,6 +40,13 @@ public class Class {
             sum += method.getCyclomaticComplexity();
         }
         this.WMC = sum;
+    }
+
+    /**
+     * Calcule le degré selon lequel une méthode est bien commentée : classe_BC = classe_DC/WMC
+     */
+    public void computeClasse_BC() {
+        this.classe_BC = (float) this.classe_DC / (float) this.WMC;
     }
 
     /**
@@ -98,5 +111,12 @@ public class Class {
      */
     public int getWMC() {
         return this.WMC;
+    }
+
+    /**
+     * @return Degré selon lequel une méthode est bien commentée : classe_BC = classe_DC/WMC
+     */
+    public float getClasse_BC() {
+        return this.classe_BC;
     }
 }
