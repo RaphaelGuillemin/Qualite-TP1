@@ -7,9 +7,10 @@ public class Method {
     private int methode_LOC; // Nombre de lignes de code d’une méthode
     private int methode_CLOC; // Nombre de lignes de code d’une méthode qui contiennent des commentaires
     private float methode_DC; // Densité de commentaires pour une méthode : methode_DC = methode_CLOC / methode_LOC
+    private float methode_BC; // Degré selon lequel une méthode est bien commentée : methode_BC = methode_DC/CC
 
-    // Attributs utilisés pour le calcul de la complexité cyclomatique
-    private int cyclomaticComplexity; // Complexité cyclomatique de McCabe
+    // Attributs utilisés pour le calcul de la complexité cyclomatique (CC)
+    private int CC; // Complexité cyclomatique de McCabe
     private int noOfIfs; // Nombre de clauses if dans la méthode
     private int noOfSwitchCases; // Nombre de cases dans les blocs switch de la méthodes
     private int noOfWhileLoops; // Nombre de bloc while ou do-while de la méthode
@@ -23,7 +24,11 @@ public class Method {
     public Method(String name, ArrayList<String> args) {
         this.name = name;
         this.args = args;
-        this.cyclomaticComplexity = 0; // Complexité cyclomatique initialisée à 1
+        this.methode_LOC = 0;
+        this.methode_CLOC = 0;
+        this.methode_DC = 0;
+        this.methode_BC = 0;
+        this.CC = 0;
         this.noOfIfs = 0;
         this.noOfSwitchCases = 0;
         this.noOfWhileLoops = 0;
@@ -34,15 +39,22 @@ public class Method {
      * Calcule la densité de commentaires pour une méthode
      */
     public void computeMethode_DC() {
-        this.methode_DC = (float)this.methode_CLOC / (float)this.methode_LOC;
+        this.methode_DC = (float) this.methode_CLOC / (float) this.methode_LOC;
     }
 
     /**
      * Calcule la complexité cyclomatique de la méthode
      */
-    public void computeCyclomaticComplexity() {
-        this.cyclomaticComplexity = 1 + this.noOfIfs + this.noOfSwitchCases
+    public void computeCC() {
+        this.CC = 1 + this.noOfIfs + this.noOfSwitchCases
                 + this.noOfWhileLoops + this.noOfForLoops;
+    }
+
+    /**
+     * Calcule le degré selon lequel une méthode est bien commentée : methode_BC = methode_DC/CC
+     */
+    public void computeMethode_BC() {
+        this.methode_BC = (float) this.methode_DC / (float) this.CC;
     }
 
     /**
@@ -97,8 +109,8 @@ public class Method {
     /**
      * @return La complexité cyclomatique de la méthode
      */
-    public int getCyclomaticComplexity() {
-        return cyclomaticComplexity;
+    public int getCC() {
+        return CC;
     }
 
     /**
@@ -156,5 +168,12 @@ public class Method {
      */
     public void incrementNoOfForLoops() {
         this.noOfForLoops += 1;
+    }
+
+    /**
+     * @return Le degré selon lequel une méthode est bien commentée : methode_BC = methode_DC/CC
+     */
+    public float getMethode_BC() {
+        return this.methode_BC;
     }
 }

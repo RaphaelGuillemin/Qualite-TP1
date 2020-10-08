@@ -240,7 +240,9 @@ public class Parser {
                         }
                         classe.setClasse_CLOC(classCommentCount);
                         classCommentCount = 0;
-                        classe.setClasse_DC();
+                        classe.computeClasse_DC();
+                        classe.computeWMC();
+                        classe.computeClasse_BC();
                         javaFile.addClass(classe);
                         classe = null;
                         continue;
@@ -264,7 +266,8 @@ public class Parser {
                         method.setMethode_CLOC(methodCommentCount);
                         methodCommentCount = 0;
                         method.computeMethode_DC();
-                        method.computeCyclomaticComplexity();
+                        method.computeCC();
+                        method.computeMethode_BC();
                         classe.addMethod(method);
                         method = null;
                     }
@@ -299,7 +302,7 @@ public class Parser {
                         }
                     }
                 }
-                if(inMethod && method != null) {
+                if (inMethod && method != null) {
 
                 }
             }
@@ -344,12 +347,18 @@ public class Parser {
         // Classes
         try (PrintWriter writer = new PrintWriter(new File("classes.csv"))) {
             StringBuilder output = new StringBuilder();
-            output.append("chemin, class, classe_LOC, classe_CLOC, classe_DC\n");
+            output.append("chemin, class, classe_LOC, classe_CLOC, classe_DC, WMC, classe_BC\n");
             for(JavaFile javaFile: javaFiles){
                 output.append(folderPath + '/' + javaFile.getName() + ", ");
                 Class classe = javaFile.getClasses().get(0);
-                output.append(classe.getName() + ", " +  classe.getClasse_LOC() + ", " + classe.getClasse_CLOC() + ", " + classe.getClasse_DC());
-                output.append('\n');
+                output.append(
+                        classe.getName() + ", "
+                        + classe.getClasse_LOC() + ", "
+                        + classe.getClasse_CLOC() + ", "
+                        + classe.getClasse_DC() + ", "
+                        + classe.getWMC() + ", "
+                        + classe.getClasse_BC() + "\n"
+                );
             }
 
             writer.write(output.toString());
@@ -360,7 +369,7 @@ public class Parser {
         // Méthode
         try (PrintWriter writer = new PrintWriter(new File("methodes.csv"))) {
             StringBuilder output = new StringBuilder();
-            output.append("chemin, class, methode, methode_LOC, methode_CLOC, methode_DC, CC\n");
+            output.append("chemin, class, methode, methode_LOC, methode_CLOC, methode_DC, CC, methode_BC\n");
             for(JavaFile javaFile: javaFiles){
                 Class classe = javaFile.getClasses().get(0);
                 ArrayList<Method> methods = classe.getMethods();
@@ -375,7 +384,9 @@ public class Parser {
                             + method.getMethode_LOC() + ", "
                             + method.getMethode_CLOC() + ", "
                             + method.getMethode_DC() + ", "
-                            + method.getCyclomaticComplexity() + '\n');
+                            + method.getCC() + ", "
+                            + method.getMethode_BC() + "\n"
+                    );
                 }
             }
             writer.write(output.toString());
