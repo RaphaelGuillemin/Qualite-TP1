@@ -8,8 +8,8 @@ public class Method {
     private int methode_CLOC; // Nombre de lignes de code d’une méthode qui contiennent des commentaires
     private float methode_DC; // Densité de commentaires pour une méthode : methode_DC = methode_CLOC / methode_LOC
 
-    // Attributs utilisés pour le calcul de la complexité cyclomatique
-    private int cyclomaticComplexity; // Complexité cyclomatique de McCabe
+    // Attributs utilisés pour le calcul de la complexité cyclomatique (CC)
+    private int CC; // Complexité cyclomatique de McCabe
     private int noOfIfs; // Nombre de clauses if dans la méthode
     private int noOfSwitchCases; // Nombre de cases dans les blocs switch de la méthodes
     private int noOfWhileLoops; // Nombre de bloc while ou do-while de la méthode
@@ -23,7 +23,7 @@ public class Method {
     public Method(String name, ArrayList<String> args) {
         this.name = name;
         this.args = args;
-        this.cyclomaticComplexity = 0; // Complexité cyclomatique initialisée à 1
+        this.CC = 0; // Complexité cyclomatique initialisée à 1
         this.noOfIfs = 0;
         this.noOfSwitchCases = 0;
         this.noOfWhileLoops = 0;
@@ -40,8 +40,8 @@ public class Method {
     /**
      * Calcule la complexité cyclomatique de la méthode
      */
-    public void computeCyclomaticComplexity() {
-        this.cyclomaticComplexity = 1 + this.noOfIfs + this.noOfSwitchCases
+    public void computeCC() {
+        this.CC = 1 + this.noOfIfs + this.noOfSwitchCases
                 + this.noOfWhileLoops + this.noOfForLoops;
     }
 
@@ -97,8 +97,8 @@ public class Method {
     /**
      * @return La complexité cyclomatique de la méthode
      */
-    public int getCyclomaticComplexity() {
-        return cyclomaticComplexity;
+    public int getCC() {
+        return CC;
     }
 
     /**

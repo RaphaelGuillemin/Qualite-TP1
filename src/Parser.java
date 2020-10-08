@@ -240,7 +240,7 @@ public class Parser {
                         }
                         classe.setClasse_CLOC(classCommentCount);
                         classCommentCount = 0;
-                        classe.setClasse_DC();
+                        classe.computeClasse_DC();
                         javaFile.addClass(classe);
                         classe = null;
                         continue;
@@ -264,7 +264,7 @@ public class Parser {
                         method.setMethode_CLOC(methodCommentCount);
                         methodCommentCount = 0;
                         method.computeMethode_DC();
-                        method.computeCyclomaticComplexity();
+                        method.computeCC();
                         classe.addMethod(method);
                         method = null;
                     }
@@ -299,7 +299,7 @@ public class Parser {
                         }
                     }
                 }
-                if(inMethod && method != null) {
+                if (inMethod && method != null) {
 
                 }
             }
@@ -375,7 +375,7 @@ public class Parser {
                             + method.getMethode_LOC() + ", "
                             + method.getMethode_CLOC() + ", "
                             + method.getMethode_DC() + ", "
-                            + method.getCyclomaticComplexity() + '\n');
+                            + method.getCC() + '\n');
                 }
             }
             writer.write(output.toString());
