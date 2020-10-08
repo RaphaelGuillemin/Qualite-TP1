@@ -2,18 +2,13 @@
  * @Author Raphaël Guillemin (p1202392, 20129638)
  */
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Parser {
     // Ensemble des fichiers java du dossier
     static private ArrayList<JavaFile> javaFiles = new ArrayList<JavaFile>();
-    // Name of the folder to be read from
-    static private String folderPath;
 
     //TODO REMOVE THIS BEFORE SENDING
     public static void print(Object str){
@@ -25,6 +20,7 @@ public class Parser {
      */
     public static void main(String[] args) throws Exception {
         // Si aucun argument passé, ne rien faire
+        String folderPath;
         if (args.length != 0){
             folderPath = args[0];
         } else {
@@ -34,31 +30,33 @@ public class Parser {
 
         // Ouvrir le lien passé en paramètre
         File folder = new File(folderPath);
-        // Séléctionner les fichiers java uniquement
-        File[] filesFolder = folder.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return s.endsWith("java");
-            }
-        });
-
-        // Déterminer si le dossier existe
-        if (filesFolder == null){
-            System.err.println("Ce dossier n'existe pas.");
-            return;
-        }
-        // Déterminer si le dossier est vide
-        else if (filesFolder.length == 0){
-            System.err.println("Ce dossier ne contient aucun fichier java.");
-            return;
-        }
-
-        // Analyser chaque fichier java du dossier
-        for(File file : filesFolder) {
-            File javaFile = new File(folderPath + '/' + file.getName());
-            javaFiles.add(parseNewFile(javaFile));
-        }
+        recursiveParseFiles(folder);
         createCSVFiles();
+    }
+
+    public static void recursiveParseFiles(File dir) throws Exception {
+        try {
+            File[] files = dir.listFiles();
+            if (files == null){
+                System.err.println("Le dossier n'existe pas");
+                return;
+            } else if (files.length == 0) {
+                System.err.println("Le dossier est vide");
+                return;
+            }
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    recursiveParseFiles(file);
+                } else {
+                    if (file.getPath().endsWith("java")) {
+                        File javaFile = new File(file.getPath());
+                        javaFiles.add(parseNewFile(javaFile));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -66,7 +64,7 @@ public class Parser {
      * @return instance de JavaFile du fichier analysé
      */
     public static JavaFile parseNewFile(File file) throws Exception{
-        JavaFile javaFile = new JavaFile(file.getName());
+        JavaFile javaFile = new JavaFile(file.getPath());
         try {
             Scanner scanner = new Scanner(file);
             boolean inClass = false;
@@ -349,7 +347,7 @@ public class Parser {
             StringBuilder output = new StringBuilder();
             output.append("chemin, class, classe_LOC, classe_CLOC, classe_DC, WMC, classe_BC\n");
             for(JavaFile javaFile: javaFiles){
-                output.append(folderPath + '/' + javaFile.getName() + ", ");
+                output.append(javaFile.getPath() + ", ");
                 Class classe = javaFile.getClasses().get(0);
                 output.append(
                         classe.getName() + ", "
@@ -374,7 +372,7 @@ public class Parser {
                 Class classe = javaFile.getClasses().get(0);
                 ArrayList<Method> methods = classe.getMethods();
                 for(Method method : methods){
-                    output.append(folderPath + '/' + javaFile.getName() + ", ");
+                    output.append(javaFile.getPath() + ", ");
                     output.append(classe.getName() + ", ");
                     String name = method.getName();
                     for (String arg : method.getArgs()){

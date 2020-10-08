@@ -3,8 +3,9 @@ import java.util.ArrayList;
 public class JavaFile {
     // Ensemble des classes du fichier java
     private ArrayList<Class> classes = new ArrayList<Class>();
-    // Nom du fichier java
-    private String name;
+    // Path du fichier java
+    private String path;
+
 
     public void addClass(Class classe){
         classes.add(classe);
@@ -14,11 +15,11 @@ public class JavaFile {
         return this.classes;
     }
 
-    public String getName() {
-        return this.name;
+    public String getPath() {
+        return this.path;
     }
 
-    public JavaFile(String name){
-        this.name = name;
+    public JavaFile(String path){
+        this.path = path;
     }
 }
