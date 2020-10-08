@@ -127,9 +127,17 @@ public class Parser {
                 // Ligne de code
                 } else {
                     // nouvelle classe
-                    if (line.contains("class") && !line.trim().startsWith("//") && !line.trim().startsWith("/*") && !line.trim().startsWith("}")){
+                    if ((line.contains("class") || line.contains("interface") || line.contains("enum"))
+                            && !inClass && !line.trim().startsWith("//") && !line.trim().startsWith("/*") && !line.trim().startsWith("}")){
                         inClass = true;
-                        String name = line.substring(line.indexOf("class"), line.indexOf('{')).split(" ")[1];
+                        String name;
+                        if (line.contains("enum")) {
+                            name = line.substring(line.indexOf("enum"), line.indexOf('{')).split(" ")[1];
+                        } else if (line.contains("interface")) {
+                            name = line.substring(line.indexOf("interface"), line.indexOf('{')).split(" ")[1];
+                        } else {
+                            name = line.substring(line.indexOf("class"), line.indexOf('{')).split(" ")[1];
+                        }
                         classe = new Class(name);
                         // Si commentaire juste avant la classe, il sera considéré dans le compte des commentaires de la classe
                         if(commentCount > 0){
@@ -146,6 +154,19 @@ public class Parser {
                             if (line.contains("*/")){
                                 inComment = false;
                             }
+                        }
+                        // Si une classe est sur une seule ligne, comme dans le cas d'un enum
+                        if (line.contains("}")) {
+                            classCount++;
+                            classe.setClasse_LOC(classCount);
+                            classCount = 0;
+                            classe.setClasse_CLOC(classCommentCount);
+                            classCommentCount = 0;
+                            classe.computeClasse_DC();
+                            classe.computeWMC();
+                            classe.computeClasse_BC();
+                            javaFile.addClass(classe);
+                            classe = null;
                         }
                         continue;
                     }
@@ -173,6 +194,22 @@ public class Parser {
                             }
                         }
                         method = new Method(name,args);
+
+                        // Si une méthode est sur une seule ligne, comme dans le cas d'un enum
+                        if (line.contains("}")) {
+                            methodCount++;
+                            inMethod = false;
+                            method.setMethode_LOC(methodCount);
+                            methodCount = 0;
+                            method.setMethode_CLOC(methodCommentCount);
+                            methodCommentCount = 0;
+                            method.computeMethode_DC();
+                            method.computeCC();
+                            method.computeMethode_BC();
+                            classe.addMethod(method);
+                            method = null;
+                        }
+
                         continue;
                     // Cas de ligne de code contenant des {} sur la meme ligne
                     } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
@@ -223,19 +260,19 @@ public class Parser {
                     // fin de classe
                     if (inClass && !inMethod && line.contains("}") && ignoreCount == 0){
                         inClass = false;
-                        classe.setClasse_LOC(classCount);
-                        classCount = 0;
                         // Vérifier si ligne contient un commentaire
-                        if(line.contains("//")){
+                        if (line.contains("//")){
                             classCommentCount++;
                         }
-                        if(line.contains("/*")){
+                        if (line.contains("/*")){
                             inComment = true;
                             classCommentCount++;
                             if (line.contains("*/")){
                                 inComment = false;
                             }
                         }
+                        classe.setClasse_LOC(classCount);
+                        classCount = 0;
                         classe.setClasse_CLOC(classCommentCount);
                         classCommentCount = 0;
                         classe.computeClasse_DC();
@@ -248,8 +285,6 @@ public class Parser {
                     // fin de méthode
                     if (inMethod && line.contains("}") && ignoreCount == 0){
                         inMethod = false;
-                        method.setMethode_LOC(methodCount);
-                        methodCount = 0;
                         // Vérifier si ligne contient un commentaire
                         if(line.contains("//")){
                             methodCommentCount++;
@@ -261,6 +296,8 @@ public class Parser {
                                 inComment = false;
                             }
                         }
+                        method.setMethode_LOC(methodCount);
+                        methodCount = 0;
                         method.setMethode_CLOC(methodCommentCount);
                         methodCommentCount = 0;
                         method.computeMethode_DC();
@@ -299,9 +336,6 @@ public class Parser {
                             }
                         }
                     }
-                }
-                if (inMethod && method != null) {
-
                 }
             }
             scanner.close();
@@ -346,17 +380,17 @@ public class Parser {
         try (PrintWriter writer = new PrintWriter(new File("classes.csv"))) {
             StringBuilder output = new StringBuilder();
             output.append("chemin, class, classe_LOC, classe_CLOC, classe_DC, WMC, classe_BC\n");
-            for(JavaFile javaFile: javaFiles){
-                output.append(javaFile.getPath() + ", ");
-                Class classe = javaFile.getClasses().get(0);
-                output.append(
-                        classe.getName() + ", "
-                        + classe.getClasse_LOC() + ", "
-                        + classe.getClasse_CLOC() + ", "
-                        + classe.getClasse_DC() + ", "
-                        + classe.getWMC() + ", "
-                        + classe.getClasse_BC() + "\n"
-                );
+            for (JavaFile javaFile: javaFiles){
+                for (Class classe : javaFile.getClasses()) {
+                    output.append(javaFile.getPath() + ", "
+                            + classe.getName() + ", "
+                            + classe.getClasse_LOC() + ", "
+                            + classe.getClasse_CLOC() + ", "
+                            + classe.getClasse_DC() + ", "
+                            + classe.getWMC() + ", "
+                            + classe.getClasse_BC() + "\n"
+                    );
+                }
             }
 
             writer.write(output.toString());
@@ -368,23 +402,23 @@ public class Parser {
         try (PrintWriter writer = new PrintWriter(new File("methodes.csv"))) {
             StringBuilder output = new StringBuilder();
             output.append("chemin, class, methode, methode_LOC, methode_CLOC, methode_DC, CC, methode_BC\n");
-            for(JavaFile javaFile: javaFiles){
-                Class classe = javaFile.getClasses().get(0);
-                ArrayList<Method> methods = classe.getMethods();
-                for(Method method : methods){
-                    output.append(javaFile.getPath() + ", ");
-                    output.append(classe.getName() + ", ");
-                    String name = method.getName();
-                    for (String arg : method.getArgs()){
-                        name += ('_' + arg);
+            for (JavaFile javaFile: javaFiles){
+                for (Class classe : javaFile.getClasses()) {
+                    for (Method method : classe.getMethods()) {
+                        output.append(javaFile.getPath() + ", ");
+                        output.append(classe.getName() + ", ");
+                        String name = method.getName();
+                        for (String arg : method.getArgs()) {
+                            name += ('_' + arg);
+                        }
+                        output.append(name + ", "
+                                + method.getMethode_LOC() + ", "
+                                + method.getMethode_CLOC() + ", "
+                                + method.getMethode_DC() + ", "
+                                + method.getCC() + ", "
+                                + method.getMethode_BC() + "\n"
+                        );
                     }
-                    output.append(name + ", "
-                            + method.getMethode_LOC() + ", "
-                            + method.getMethode_CLOC() + ", "
-                            + method.getMethode_DC() + ", "
-                            + method.getCC() + ", "
-                            + method.getMethode_BC() + "\n"
-                    );
                 }
             }
             writer.write(output.toString());

@@ -10,6 +10,14 @@ public void test(int a) {
 	for(i=1; i <100; i++) a++;
 }
 
+Enum considéré comme une classe s'il est à l'extérieur d'une classe. S'il est dans une classe, il sera considéré comme une méthode.
+Si le enum est sur une seule ligne, la ligne sera compté dans le nombre de ligne de la classe (ou de la méthode) (=1)
+
+Pour les ratios comme classe_BC, dans le cas ou le classe_DC = 0 et/ou WMC = 0, nous avons laissé les valeurs NaN et Infinity.
+Nous ne voulions pas forcer un classe_BC de 0 car cela représente mal la situation. S'il n'y a aucun commentaire et aucune classe (exemple enum),
+un classe_BC de 0 reflète pas la situation. La densité n'est pas mauvaise, la métrique n'a juste pas vraiment de sens.
+
+
 Partie 3
 * Complexité cyclomatique de McCab :
 V(F) = 1 + d où d est le nombre de noeuds prédicats

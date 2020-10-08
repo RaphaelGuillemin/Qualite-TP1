@@ -1,0 +1,1 @@
+enum ScaleName {celsius, fahrenheit, kelvin, rankine};
