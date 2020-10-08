@@ -90,7 +90,7 @@ public class Parser {
                 // Compter le nombre de case dans un bloc switch
                 if (inSwitch) {
                     // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
-                    String nonCommentLine = line;
+                    String nonCommentLine = line.trim();
                     if (line.contains("//") || line.contains("/*")) {
                         String[] lineArray = line.split("/{2}|/*");
                         nonCommentLine = lineArray[0].trim(); // Enlève le whitespace au début de la ligne
@@ -195,8 +195,7 @@ public class Parser {
                         ignoreCount++;
                         methodCount++;
                         classCount++;
-
-
+                        
                         String nonCommentLine = line.trim();
                         // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
                         if (line.contains("//") || line.contains("/*")) {
