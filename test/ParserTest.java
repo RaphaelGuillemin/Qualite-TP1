@@ -159,7 +159,7 @@ public class ParserTest {
         parseNewFileTest();
         parseMainFileTest();
         parseInterfaceTest();
-        //parseEnumTest();
+        parseEnumTest();
         parseMethodsTest();
         notJavaFileTest();
     }
