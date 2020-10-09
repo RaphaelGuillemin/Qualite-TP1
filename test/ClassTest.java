@@ -2,6 +2,9 @@ import java.util.ArrayList;
 
 public class ClassTest {
 
+    /**
+     * Happy path. Compute WMC from 2 methods.
+     */
     public static void computeWMCTest() {
         // Prepare
         Method method1 = new Method("method1", new ArrayList<>(), 10, 10);
