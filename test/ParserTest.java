@@ -120,11 +120,25 @@ public class ParserTest {
 
     }
 
+    public static void notJavaFileTest() throws Exception {
+        // Prepare
+        String filePath = "/thisissupposedtobeignored.txt";
+        File testFile = new File(folderPath + filePath);
+        Parser.setJavaFiles(new ArrayList<>());
+
+        // Run
+        Parser.recursiveParseFiles(testFile);
+
+        // Assert
+        assert Parser.getJavaFiles().isEmpty();
+    }
+
     public static void main(String[] args) throws Exception {
         parseNewFileTest();
         parseMainFileTest();
         parseInterfaceTest();
         parseEnumTest();
+        notJavaFileTest();
 
     }
 }
