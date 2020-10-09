@@ -417,4 +417,18 @@ public class Parser {
         }
 
     }
+
+    /**
+     * @return Ensemble des fichiers java du dossier
+     */
+    public static ArrayList<JavaFile> getJavaFiles() {
+        return javaFiles;
+    }
+
+    /**
+     * @param javaFiles Ensemble des fichiers java du dossier
+     */
+    public static void setJavaFiles(ArrayList<JavaFile> javaFiles) {
+        Parser.javaFiles = javaFiles;
+    }
 }
