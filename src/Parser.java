@@ -9,10 +9,6 @@ import java.util.Scanner;
 public class Parser {
     // Ensemble des fichiers java du dossier
     static private ArrayList<JavaFile> javaFiles = new ArrayList<JavaFile>();
-    //TODO REMOVE THIS BEFORE SENDING
-    public static void print(Object str){
-        System.out.println(str);
-    }
 
     /*
      * @param args A string of the path to the folder containing java files
@@ -71,7 +67,7 @@ public class Parser {
 
             Class classe = null;
             Method method = null;
-            Class outterClass = null;
+            Class outerClass = null;
 
             int ignoreCount = 0; // Nombre de fois que l'on rencontre un { dans une méthode
             int ignoreCountStartSwitch = 0; // Valeur de ignoreCount à l'entrée d'un bloc switch
@@ -81,7 +77,6 @@ public class Parser {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String nonCommentLine = line.trim();
-
                 // Ligne vide
                 if(nonCommentLine.equals("")){
                     untrackedCLOC = 0;
@@ -108,8 +103,8 @@ public class Parser {
                     }
                     if (classe != null) {
                         classe.incrementClasse_CLOC();
-                        if(outterClass != null){
-                            outterClass.incrementClasse_CLOC();
+                        if(outerClass != null){
+                            outerClass.incrementClasse_CLOC();
                         }
                         if (method != null) {
                             method.incrementMethode_CLOC();
@@ -128,8 +123,8 @@ public class Parser {
 
                     // Incrementer les LOC de toutes les classes en cours et de la methode
                     if (classe != null){
-                        if (outterClass != null){
-                            outterClass.incrementClasse_LOC();
+                        if (outerClass != null){
+                            outerClass.incrementClasse_LOC();
                         }
                         classe.incrementClasse_LOC();
                         if (method != null){
@@ -148,8 +143,8 @@ public class Parser {
                         } else {
                             inComment = false;
                         }
-                        nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
-                        if ((classe == null && outterClass == null && method == null) || (classe != null && method == null)){
+                        nonCommentLine = getNonCommentLine(nonCommentLine, classe, outerClass, method);
+                        if ((classe == null && outerClass == null && method == null) || (classe != null && method == null)){
                             untrackedCLOC++;
                         }
                     }
@@ -159,21 +154,25 @@ public class Parser {
                             !nonCommentLine.trim().endsWith("}") && !nonCommentLine.trim().endsWith(":")){
                         while(!nonCommentLine.trim().endsWith(";") && !nonCommentLine.trim().endsWith("{") &&
                                 !nonCommentLine.trim().endsWith("}") && !nonCommentLine.trim().endsWith(":") && scanner.hasNextLine()){
-                            nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
+                            if(nonCommentLine.endsWith("(")){
+                                nonCommentLine = nonCommentLine.concat(scanner.nextLine().trim());
+                            } else {
+                                nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
+                            }
                             if (nonCommentLine.contains("//") || nonCommentLine.contains("/*")) {
                                 if((nonCommentLine.contains("/*") || inComment) && !nonCommentLine.contains("*/")){
                                     inComment = true;
                                 } else {
                                     inComment = false;
                                 }
-                                nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
-                                if ((classe == null && outterClass == null && method == null) || (classe != null && method == null)){
+                                nonCommentLine = getNonCommentLine(nonCommentLine, classe, outerClass, method);
+                                if ((classe == null && outerClass == null && method == null) || (classe != null && method == null)){
                                     untrackedCLOC++;
                                 }
                             }
                             if (classe != null){
-                                if (outterClass != null){
-                                    outterClass.incrementClasse_LOC();
+                                if (outerClass != null){
+                                    outerClass.incrementClasse_LOC();
                                 }
                                 classe.incrementClasse_LOC();
                                 if (method != null){
@@ -194,7 +193,7 @@ public class Parser {
                             nonCommentLine.contains("enum ")) && !nonCommentLine.trim().startsWith("}") &&
                             !nonCommentLine.contains("=") && !nonCommentLine.endsWith(";")){
                         if(classe != null){
-                            outterClass = classe;
+                            outerClass = classe;
                         }
                         String name;
                         if (nonCommentLine.contains("enum ")) {
@@ -221,9 +220,9 @@ public class Parser {
                             classe.computeWMC();
                             classe.computeClasse_BC();
                             javaFile.addClass(classe);
-                            if (outterClass != null){
-                                classe = outterClass;
-                                outterClass = null;
+                            if (outerClass != null){
+                                classe = outerClass;
+                                outerClass = null;
                             } else {
                                 classe = null;
                             }
@@ -290,13 +289,12 @@ public class Parser {
                         classe.computeClasse_BC();
                         javaFile.addClass(classe);
                         untrackedLOC = 0;
-                        if (outterClass != null){
-                            classe = outterClass;
-                            outterClass = null;
+                        if (outerClass != null){
+                            classe = outerClass;
+                            outerClass = null;
                         } else {
                             classe = null;
                         }
-
                         continue;
                     }
                     // fin de méthode
@@ -354,9 +352,9 @@ public class Parser {
                 name.add(part.split("[(]")[0]);
             }
         }
-        String[] arguments = line.substring(line.indexOf("(") + 1, line.indexOf(')')).split(" ");
-        for(int i=0; i < arguments.length; i+=2){
-            args.add(arguments[i]);
+        String[] arguments = line.substring(line.indexOf("(") + 1, line.indexOf(')')).split(",");
+        for(int i=0; i < arguments.length; i++){
+            args.add(arguments[i].trim().split(" ")[0]);
         }
         tab.add(name);
         tab.add(args);
