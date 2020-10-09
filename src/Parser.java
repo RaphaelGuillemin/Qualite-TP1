@@ -9,7 +9,6 @@ import java.util.Scanner;
 public class Parser {
     // Ensemble des fichiers java du dossier
     static private ArrayList<JavaFile> javaFiles = new ArrayList<JavaFile>();
-
     //TODO REMOVE THIS BEFORE SENDING
     public static void print(Object str){
         System.out.println(str);
@@ -84,11 +83,13 @@ public class Parser {
                 String nonCommentLine = line.trim();
 
                 // Ligne vide
-                if(line.equals("")){
+                if(nonCommentLine.equals("")){
                     untrackedCLOC = 0;
+                    if (classe != null){
+                        untrackedLOC = 0;
+                    }
                     continue;
                 }
-
                 // Compter le nombre de case dans un bloc switch
                 if (inSwitch) {
                     if (nonCommentLine.startsWith("case")) {
@@ -99,7 +100,6 @@ public class Parser {
                         ignoreCountStartSwitch = 0;
                     }
                 }
-
                 // Commentaire et javadoc
                 if(inComment || nonCommentLine.startsWith("//") || nonCommentLine.startsWith("/*")
                         || nonCommentLine.startsWith("@")) {
@@ -154,23 +154,20 @@ public class Parser {
                         }
                     }
 
-                    // cas où l'on ouvre une parenthese et on ne la ferme pas sur la meme ligne
-                    if (nonCommentLine.contains("(") && !nonCommentLine.contains(")")){
-                        // on agrandit la ligne jusqu'à avoir la parenthèse finale
-                        while((!nonCommentLine.contains(")") || nonCommentLine.endsWith(",")) && scanner.hasNextLine()){
-                            if(nonCommentLine.endsWith("(")){
-                                nonCommentLine = nonCommentLine.concat(scanner.nextLine().trim());
-                            } else {
-                                nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
-                            }
+                    // cas où une ligne ne finit pas par ; ou { ou } ou :
+                    if (!nonCommentLine.trim().endsWith(";") && !nonCommentLine.trim().endsWith("{") &&
+                            !nonCommentLine.trim().endsWith("}") && !nonCommentLine.trim().endsWith(":")){
+                        while(!nonCommentLine.trim().endsWith(";") && !nonCommentLine.trim().endsWith("{") &&
+                                !nonCommentLine.trim().endsWith("}") && !nonCommentLine.trim().endsWith(":") && scanner.hasNextLine()){
+                            nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
                             if (nonCommentLine.contains("//") || nonCommentLine.contains("/*")) {
-                                if(!nonCommentLine.contains("*/")){
+                                if((nonCommentLine.contains("/*") || inComment) && !nonCommentLine.contains("*/")){
                                     inComment = true;
                                 } else {
                                     inComment = false;
                                 }
                                 nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
-                                if (classe == null && outterClass == null && method == null){
+                                if ((classe == null && outterClass == null && method == null) || (classe != null && method == null)){
                                     untrackedCLOC++;
                                 }
                             }
@@ -181,70 +178,12 @@ public class Parser {
                                 classe.incrementClasse_LOC();
                                 if (method != null){
                                     method.incrementMethode_LOC();
+                                } else {
+                                    untrackedLOC++;
                                 }
                             } else {
                                 untrackedLOC++;
                             }
-                        }
-
-                    }
-
-                    // cas où l'on commence une classe et on ne fini pas de la définir sur la meme ligne
-                    if ((nonCommentLine.contains("class ") || nonCommentLine.contains("interface ") ||
-                            nonCommentLine.contains("enum ")) && !nonCommentLine.contains("{") && !nonCommentLine.contains(";")){
-                        while(!nonCommentLine.contains("{") && scanner.hasNextLine()){
-                            nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
-                        }
-                        if (nonCommentLine.contains("//") || nonCommentLine.contains("/*")) {
-                            if(!nonCommentLine.contains("*/")){
-                                inComment = true;
-                            } else {
-                                inComment = false;
-                            }
-                            nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
-                            if (classe == null && outterClass == null && method == null){
-                                untrackedCLOC++;
-                            }
-                        }
-                        if (classe != null){
-                            if (outterClass != null){
-                                outterClass.incrementClasse_LOC();
-                            }
-                            classe.incrementClasse_LOC();
-                            if (method != null){
-                                method.incrementMethode_LOC();
-                            }
-                        } else {
-                            untrackedLOC++;
-                        }
-                    }
-
-                    // cas où l'on une ligne fini par une ,
-                    if (nonCommentLine.trim().endsWith(",") || nonCommentLine.trim().endsWith("\"")){
-                        while(!nonCommentLine.endsWith(";") && scanner.hasNextLine()){
-                            nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
-                        }
-                        if (nonCommentLine.contains("//") || nonCommentLine.contains("/*")) {
-                            if(!nonCommentLine.contains("*/")){
-                                inComment = true;
-                            } else {
-                                inComment = false;
-                            }
-                            nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
-                            if (classe == null && outterClass == null && method == null){
-                                untrackedCLOC++;
-                            }
-                        }
-                        if (classe != null){
-                            if (outterClass != null){
-                                outterClass.incrementClasse_LOC();
-                            }
-                            classe.incrementClasse_LOC();
-                            if (method != null){
-                                method.incrementMethode_LOC();
-                            }
-                        } else {
-                            untrackedLOC++;
                         }
                     }
 
@@ -257,7 +196,6 @@ public class Parser {
                         if(classe != null){
                             outterClass = classe;
                         }
-
                         String name;
                         if (nonCommentLine.contains("enum ")) {
                             name = nonCommentLine.substring(nonCommentLine.indexOf("enum"), nonCommentLine.indexOf('{')).split(" ")[1];
@@ -272,14 +210,13 @@ public class Parser {
                                 name = name.split("<")[0];
                             }
                         }
-
                         // Si commentaire juste avant la classe, il sera considéré dans le compte des commentaires de la classe
                         classe = new Class(name, untrackedLOC, untrackedCLOC);
                         untrackedCLOC = 0;
                         untrackedLOC = 0;
 
                         // Si une classe est sur une seule ligne, comme dans le cas d'un enum
-                        if (line.contains("}")) {
+                        if (nonCommentLine.contains("}")) {
                             classe.computeClasse_DC();
                             classe.computeWMC();
                             classe.computeClasse_BC();
@@ -295,7 +232,8 @@ public class Parser {
                     }
                     // nouvelle méthode
                     if (nonCommentLine.contains("{") && nonCommentLine.contains("(") &&
-                            classe != null && method == null && !nonCommentLine.contains("=") && !nonCommentLine.contains("->")){
+                            classe != null && method == null && !nonCommentLine.contains("=") && !nonCommentLine.contains("->")
+                            && !nonCommentLine.startsWith("if") && !nonCommentLine.startsWith("else") && !nonCommentLine.startsWith("for")){
                         ArrayList<String> args;
                         String name;
                         if (!nonCommentLine.contains("class")){
@@ -303,7 +241,7 @@ public class Parser {
                             name = nameAndArgs.get(0).get(0);
                             args = nameAndArgs.get(1);
                         } else {
-                            name = line.substring(line.indexOf("class"), line.indexOf('{')).split(" ")[1];
+                            name = nonCommentLine.substring(nonCommentLine.indexOf("class"), nonCommentLine.indexOf('{')).split(" ")[1];
                             args = new ArrayList<String>();
                         }
                         method = new Method(name, args, untrackedLOC, untrackedCLOC);
@@ -317,16 +255,16 @@ public class Parser {
                             classe.addMethod(method);
                             method = null;
                         }
-
                         continue;
+                    }
                     // Cas de ligne de code contenant des {} sur la meme ligne
-                    } else if (nonCommentLine.contains("{") && classe != null && method != null && nonCommentLine.contains("}") ){
+                    if (nonCommentLine.contains("{") && classe != null && method != null && nonCommentLine.contains("}") ){
                         if (nonCommentLine.startsWith("} else if")) {
                             method.incrementNoOfIfs();
                         }
                         continue;
                     // Cas ou la ligne de code contient un { (par exemple: for, while, switch, if, etc)
-                    } else if (line.contains("{") && classe != null && method != null) {
+                    } else if (nonCommentLine.contains("{") && classe != null && method != null) {
                         ignoreCount++;
                         if (nonCommentLine.startsWith("if")) {
                             method.incrementNoOfIfs();
@@ -340,9 +278,8 @@ public class Parser {
                         }
                         continue;
                     }
-                    print(nonCommentLine);
                     // Cas ou l'on finit une boucle
-                    if (line.contains("}") && ignoreCount > 0){
+                    if (nonCommentLine.contains("}") && ignoreCount > 0){
                         ignoreCount--;
                         continue;
                     }
