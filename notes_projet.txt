@@ -2,7 +2,7 @@ Lignes d'une classe : toutes les lignes à l'intérieur de {}, même si juste }
 Lignes d'une méthode : lignes à l'intérieur de la méthode (n'inclut pas le nom de la méthode et })
 Un commentaire qui est situé avant une méthode doit être collé à la méthode sans espace vide entre pour être considéré comme un commentaire de la méthode. Les commentaires d'une méthode sont situés directement avant la méthode, ou à l'intérieur des {}.
 @override : commentaire
-import : pas une ligne de code
+import et package : pas une ligne de code
 On peut avoir un commentaire d'une seule ligne après le } de fin de classe et de ifn de méthode
 
 On suppose que le programme java suit les conventions. Par exemple, public void test(int a) {for(i=1; i <100; i++) a++;} serait écrit comme :

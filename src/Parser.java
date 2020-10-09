@@ -9,7 +9,6 @@ import java.util.Scanner;
 public class Parser {
     // Ensemble des fichiers java du dossier
     static private ArrayList<JavaFile> javaFiles = new ArrayList<JavaFile>();
-
     //TODO REMOVE THIS BEFORE SENDING
     public static void print(Object str){
         System.out.println(str);
@@ -67,177 +66,206 @@ public class Parser {
         JavaFile javaFile = new JavaFile(file.getPath());
         try {
             Scanner scanner = new Scanner(file);
-            boolean inClass = false;
-            boolean inMethod = false;
             boolean inComment = false;
             boolean inSwitch = false;
 
             Class classe = null;
             Method method = null;
+            Class outterClass = null;
 
-            int classCount = 0;
-            int methodCount = 0;
-            int classCommentCount = 0;
-            int methodCommentCount = 0;
             int ignoreCount = 0; // Nombre de fois que l'on rencontre un { dans une méthode
             int ignoreCountStartSwitch = 0; // Valeur de ignoreCount à l'entrée d'un bloc switch
-            int commentCount = 0;
+            int untrackedLOC = 0;
+            int untrackedCLOC = 0;
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+                String nonCommentLine = line.trim();
+
+                // Ligne vide
+                if(nonCommentLine.equals("")){
+                    untrackedCLOC = 0;
+                    if (classe != null){
+                        untrackedLOC = 0;
+                    }
+                    continue;
+                }
                 // Compter le nombre de case dans un bloc switch
                 if (inSwitch) {
-                    // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
-                    String nonCommentLine = line.trim();
-                    if (line.contains("//") || line.contains("/*")) {
-                        String[] lineArray = line.split("/{2}|/*");
-                        nonCommentLine = lineArray[0].trim(); // Enlève le whitespace au début de la ligne
-                    }
                     if (nonCommentLine.startsWith("case")) {
                         method.incrementNoOfSwitchCases();
                     }
-                    if (nonCommentLine.contains("}") && ignoreCountStartSwitch == ignoreCount-1) {
+                    if (nonCommentLine.contains("}") && ignoreCountStartSwitch == ignoreCount) {
                         inSwitch = false;
                         ignoreCountStartSwitch = 0;
                     }
                 }
-                // Ligne vide
-                if(line.equals("")){
-                    commentCount = 0;
-                    continue;
                 // Commentaire et javadoc
-                } else if(inComment || line.trim().startsWith("//") || line.trim().startsWith("/*")
-                        || line.trim().startsWith("@")) {
-                    if (line.trim().startsWith("/*")) {
+                if(inComment || nonCommentLine.startsWith("//") || nonCommentLine.startsWith("/*")
+                        || nonCommentLine.startsWith("@")) {
+                    if (nonCommentLine.startsWith("/*")) {
                         inComment = true;
                     }
-                    if (inClass) {
-                        classCommentCount++;
-                        if (inMethod) {
-                            methodCommentCount++;
+                    if (classe != null) {
+                        classe.incrementClasse_CLOC();
+                        if(outterClass != null){
+                            outterClass.incrementClasse_CLOC();
+                        }
+                        if (method != null) {
+                            method.incrementMethode_CLOC();
                         } else {
-                            commentCount++;
+                            untrackedCLOC++;
                         }
                     } else {
-                        commentCount++;
+                        untrackedCLOC++;
                     }
-                    if (line.contains("*/")) {
+                    if (nonCommentLine.contains("*/")) {
                         inComment = false;
                     }
+
                 // Ligne de code
                 } else {
-                    // nouvelle classe
-                    if ((line.contains("class") || line.contains("interface") || line.contains("enum"))
-                            && !inClass && !line.trim().startsWith("//") && !line.trim().startsWith("/*") && !line.trim().startsWith("}")){
-                        inClass = true;
-                        String name;
-                        if (line.contains("enum")) {
-                            name = line.substring(line.indexOf("enum"), line.indexOf('{')).split(" ")[1];
-                        } else if (line.contains("interface")) {
-                            name = line.substring(line.indexOf("interface"), line.indexOf('{')).split(" ")[1];
+
+                    // Incrementer les LOC de toutes les classes en cours et de la methode
+                    if (classe != null){
+                        if (outterClass != null){
+                            outterClass.incrementClasse_LOC();
+                        }
+                        classe.incrementClasse_LOC();
+                        if (method != null){
+                            method.incrementMethode_LOC();
                         } else {
-                            name = line.substring(line.indexOf("class"), line.indexOf('{')).split(" ")[1];
+                            untrackedLOC++;
                         }
-                        classe = new Class(name);
-                        // Si commentaire juste avant la classe, il sera considéré dans le compte des commentaires de la classe
-                        if(commentCount > 0){
-                            classCommentCount = commentCount;
-                            commentCount = 0;
-                        }
-                        // Vérifier si ligne contient un commentaire
-                        if(line.contains("//")){
-                            classCommentCount++;
-                        }
-                        if(line.contains("/*")){
+                    } else {
+                        untrackedLOC++;
+                    }
+
+                    // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
+                    if (nonCommentLine.contains("//") || nonCommentLine.contains("/*")) {
+                        if((nonCommentLine.contains("/*") || inComment) && !nonCommentLine.contains("*/")){
                             inComment = true;
-                            classCommentCount++;
-                            if (line.contains("*/")){
-                                inComment = false;
+                        } else {
+                            inComment = false;
+                        }
+                        nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
+                        if ((classe == null && outterClass == null && method == null) || (classe != null && method == null)){
+                            untrackedCLOC++;
+                        }
+                    }
+
+                    // cas où une ligne ne finit pas par ; ou { ou } ou :
+                    if (!nonCommentLine.trim().endsWith(";") && !nonCommentLine.trim().endsWith("{") &&
+                            !nonCommentLine.trim().endsWith("}") && !nonCommentLine.trim().endsWith(":")){
+                        while(!nonCommentLine.trim().endsWith(";") && !nonCommentLine.trim().endsWith("{") &&
+                                !nonCommentLine.trim().endsWith("}") && !nonCommentLine.trim().endsWith(":") && scanner.hasNextLine()){
+                            nonCommentLine = nonCommentLine.concat(" " + scanner.nextLine().trim());
+                            if (nonCommentLine.contains("//") || nonCommentLine.contains("/*")) {
+                                if((nonCommentLine.contains("/*") || inComment) && !nonCommentLine.contains("*/")){
+                                    inComment = true;
+                                } else {
+                                    inComment = false;
+                                }
+                                nonCommentLine = getNonCommentLine(nonCommentLine, classe, outterClass, method);
+                                if ((classe == null && outterClass == null && method == null) || (classe != null && method == null)){
+                                    untrackedCLOC++;
+                                }
+                            }
+                            if (classe != null){
+                                if (outterClass != null){
+                                    outterClass.incrementClasse_LOC();
+                                }
+                                classe.incrementClasse_LOC();
+                                if (method != null){
+                                    method.incrementMethode_LOC();
+                                } else {
+                                    untrackedLOC++;
+                                }
+                            } else {
+                                untrackedLOC++;
                             }
                         }
+                    }
+
+                    // à partir d'ici toutes les lignes de code sont complètes
+
+                    // nouvelle classe
+                    if ((nonCommentLine.contains("class ") || nonCommentLine.contains("interface ") ||
+                            nonCommentLine.contains("enum ")) && !nonCommentLine.trim().startsWith("}") &&
+                            !nonCommentLine.contains("=") && !nonCommentLine.endsWith(";")){
+                        if(classe != null){
+                            outterClass = classe;
+                        }
+                        String name;
+                        if (nonCommentLine.contains("enum ")) {
+                            name = nonCommentLine.substring(nonCommentLine.indexOf("enum"), nonCommentLine.indexOf('{')).split(" ")[1];
+                        } else if (nonCommentLine.contains("interface ")) {
+                            name = nonCommentLine.substring(nonCommentLine.indexOf("interface"), nonCommentLine.indexOf('{')).split(" ")[1];
+                            if(name.contains("<")){
+                                name = name.split("<")[0];
+                            }
+                        } else {
+                            name = nonCommentLine.substring(nonCommentLine.indexOf("class"), nonCommentLine.indexOf('{')).split(" ")[1];
+                            if(name.contains("<")){
+                                name = name.split("<")[0];
+                            }
+                        }
+                        // Si commentaire juste avant la classe, il sera considéré dans le compte des commentaires de la classe
+                        classe = new Class(name, untrackedLOC, untrackedCLOC);
+                        untrackedCLOC = 0;
+                        untrackedLOC = 0;
+
                         // Si une classe est sur une seule ligne, comme dans le cas d'un enum
-                        if (line.contains("}")) {
-                            classCount++;
-                            classe.setClasse_LOC(classCount);
-                            classCount = 0;
-                            classe.setClasse_CLOC(classCommentCount);
-                            classCommentCount = 0;
+                        if (nonCommentLine.contains("}")) {
                             classe.computeClasse_DC();
                             classe.computeWMC();
                             classe.computeClasse_BC();
                             javaFile.addClass(classe);
-                            classe = null;
+                            if (outterClass != null){
+                                classe = outterClass;
+                                outterClass = null;
+                            } else {
+                                classe = null;
+                            }
                         }
                         continue;
                     }
                     // nouvelle méthode
-                    if (line.contains("{") && inClass && !inMethod){
-                        inMethod = true;
-                        ArrayList<ArrayList<String>> nameAndArgs = getNameAndArgs(line.trim());
-                        String name = nameAndArgs.get(0).get(0);
-                        ArrayList<String> args = nameAndArgs.get(1);
-                        classCount++;
-                        if(commentCount > 0){
-                            methodCommentCount = commentCount;
-                            commentCount = 0;
+                    if (nonCommentLine.contains("{") && nonCommentLine.contains("(") &&
+                            classe != null && method == null && !nonCommentLine.contains("=") && !nonCommentLine.contains("->")
+                            && !nonCommentLine.startsWith("if") && !nonCommentLine.startsWith("else") && !nonCommentLine.startsWith("for")){
+                        ArrayList<String> args;
+                        String name;
+                        if (!nonCommentLine.contains("class")){
+                            ArrayList<ArrayList<String>> nameAndArgs = getNameAndArgs(nonCommentLine);
+                            name = nameAndArgs.get(0).get(0);
+                            args = nameAndArgs.get(1);
+                        } else {
+                            name = nonCommentLine.substring(nonCommentLine.indexOf("class"), nonCommentLine.indexOf('{')).split(" ")[1];
+                            args = new ArrayList<String>();
                         }
-                        // Vérifier si ligne contient un commentaire
-                        if(line.contains("//")){
-                            methodCommentCount++;
-                        }
-                        if(line.contains("/*")){
-                            inComment = true;
-                            methodCommentCount++;
-                            classCommentCount++;
-                            if (line.contains("*/")){
-                                inComment = false;
-                            }
-                        }
-                        method = new Method(name,args);
-
+                        method = new Method(name, args, untrackedLOC, untrackedCLOC);
+                        untrackedCLOC = 0;
+                        untrackedLOC = 0;
                         // Si une méthode est sur une seule ligne, comme dans le cas d'un enum
-                        if (line.contains("}")) {
-                            methodCount++;
-                            inMethod = false;
-                            method.setMethode_LOC(methodCount);
-                            methodCount = 0;
-                            method.setMethode_CLOC(methodCommentCount);
-                            methodCommentCount = 0;
+                        if (nonCommentLine.contains("}")) {
                             method.computeMethode_DC();
                             method.computeCC();
                             method.computeMethode_BC();
                             classe.addMethod(method);
                             method = null;
                         }
-
                         continue;
+                    }
                     // Cas de ligne de code contenant des {} sur la meme ligne
-                    } else if (line.contains("{") && inClass && inMethod && line.contains("}") ){
-                        classCount++;
-                        methodCount++;
-                        String nonCommentLine = line.trim();
-                        // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
-                        if (line.contains("//") || line.contains("/*")) {
-                            String[] lineArray = line.split("/{2}|/*");
-                            nonCommentLine = lineArray[0].trim(); // Enlève le whitespace avant la ligne
-                        }
+                    if (nonCommentLine.contains("{") && classe != null && method != null && nonCommentLine.contains("}") ){
                         if (nonCommentLine.startsWith("} else if")) {
                             method.incrementNoOfIfs();
                         }
                         continue;
                     // Cas ou la ligne de code contient un { (par exemple: for, while, switch, if, etc)
-                    } else if (line.contains("{") && inClass && inMethod) {
+                    } else if (nonCommentLine.contains("{") && classe != null && method != null) {
                         ignoreCount++;
-                        methodCount++;
-                        classCount++;
-                        
-                        String nonCommentLine = line.trim();
-                        // Séparer la ligne en 2 blocs (avant le début du commentaire et après le début du commentaire)
-                        if (line.contains("//") || line.contains("/*")) {
-                            String[] lineArray = line.split("/{2}|/*");
-                            nonCommentLine = lineArray[0].trim(); // Enlève le whitespace avant la ligne
-                        }
-
                         if (nonCommentLine.startsWith("if")) {
                             method.incrementNoOfIfs();
                         } else if (nonCommentLine.startsWith("switch")) {
@@ -251,90 +279,33 @@ public class Parser {
                         continue;
                     }
                     // Cas ou l'on finit une boucle
-                    if (line.contains("}") && ignoreCount > 0){
+                    if (nonCommentLine.contains("}") && ignoreCount > 0){
                         ignoreCount--;
-                        methodCount++;
-                        classCount++;
                         continue;
                     }
                     // fin de classe
-                    if (inClass && !inMethod && line.contains("}") && ignoreCount == 0){
-                        inClass = false;
-                        // Vérifier si ligne contient un commentaire
-                        if (line.contains("//")){
-                            classCommentCount++;
-                        }
-                        if (line.contains("/*")){
-                            inComment = true;
-                            classCommentCount++;
-                            if (line.contains("*/")){
-                                inComment = false;
-                            }
-                        }
-                        classe.setClasse_LOC(classCount);
-                        classCount = 0;
-                        classe.setClasse_CLOC(classCommentCount);
-                        classCommentCount = 0;
+                    if (classe != null && method == null && nonCommentLine.contains("}") && ignoreCount == 0){
                         classe.computeClasse_DC();
                         classe.computeWMC();
                         classe.computeClasse_BC();
                         javaFile.addClass(classe);
-                        classe = null;
+                        untrackedLOC = 0;
+                        if (outterClass != null){
+                            classe = outterClass;
+                            outterClass = null;
+                        } else {
+                            classe = null;
+                        }
+
                         continue;
                     }
                     // fin de méthode
-                    if (inMethod && line.contains("}") && ignoreCount == 0){
-                        inMethod = false;
-                        // Vérifier si ligne contient un commentaire
-                        if(line.contains("//")){
-                            methodCommentCount++;
-                        }
-                        if(line.contains("/*")){
-                            inComment = true;
-                            methodCommentCount++;
-                            if (line.contains("*/")){
-                                inComment = false;
-                            }
-                        }
-                        method.setMethode_LOC(methodCount);
-                        methodCount = 0;
-                        method.setMethode_CLOC(methodCommentCount);
-                        methodCommentCount = 0;
+                    if (method != null && nonCommentLine.contains("}") && ignoreCount == 0){
                         method.computeMethode_DC();
                         method.computeCC();
                         method.computeMethode_BC();
                         classe.addMethod(method);
                         method = null;
-                    }
-                    // ligne de code d'une classe
-                    if (inClass){
-                        classCount++;
-                        // Vérifier si ligne contient un commentaire
-                        if(line.contains("//")){
-                            classCommentCount++;
-                        }
-                        if(line.contains("/*")){
-                            inComment = true;
-                            classCommentCount++;
-                            if (line.contains("*/")){
-                                inComment = false;
-                            }
-                        }
-                    }
-                    // ligne de code d'une méthode
-                    if (inMethod){
-                        methodCount++;
-                        // Vérifier si ligne contient un commentaire
-                        if(line.contains("//")){
-                            methodCommentCount++;
-                        }
-                        if(line.contains("/*")){
-                            inComment = true;
-                            methodCommentCount++;
-                            if (line.contains("*/")){
-                                inComment = false;
-                            }
-                        }
                     }
                 }
             }
@@ -345,6 +316,27 @@ public class Parser {
             e.printStackTrace();
         }
         return javaFile;
+    }
+
+    public static String getNonCommentLine(String line, Class classe, Class outterClass, Method method){
+        String[] lineArray = line.trim().split("//{2}|//*");
+        String nonCommentLine = lineArray[0].trim(); // Enlève le whitespace avant la ligne
+        if (line.contains("*/")){
+            String[] afterComment = line.trim().split("/*/");
+            if(afterComment.length > 2 && afterComment[2].trim().length() > 0) {
+                nonCommentLine = nonCommentLine.concat(" " + afterComment[2].trim());
+            }
+        }
+        if (classe != null){
+            if (outterClass != null){
+                outterClass.incrementClasse_CLOC();
+            }
+            classe.incrementClasse_CLOC();
+        }
+        if (method != null){
+            method.incrementMethode_CLOC();
+        }
+        return nonCommentLine;
     }
 
     /*
@@ -362,7 +354,6 @@ public class Parser {
                 name.add(part.split("[(]")[0]);
             }
         }
-
         String[] arguments = line.substring(line.indexOf("(") + 1, line.indexOf(')')).split(" ");
         for(int i=0; i < arguments.length; i+=2){
             args.add(arguments[i]);
