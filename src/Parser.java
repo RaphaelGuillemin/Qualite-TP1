@@ -189,9 +189,10 @@ public class Parser {
                     // à partir d'ici toutes les lignes de code sont complètes
 
                     // nouvelle classe
-                    if ((nonCommentLine.contains("class ") || nonCommentLine.contains("interface ") ||
-                            nonCommentLine.contains("enum ")) && !nonCommentLine.trim().startsWith("}") &&
-                            !nonCommentLine.contains("=") && !nonCommentLine.endsWith(";")){
+                    if ((((nonCommentLine.contains("class ") || nonCommentLine.contains("interface "))
+                            && !nonCommentLine.endsWith(";")) || nonCommentLine.contains("enum "))
+                            && !nonCommentLine.trim().startsWith("}") && !nonCommentLine.contains("=")
+                            && nonCommentLine.contains("{")){
                         if(classe != null){
                             outerClass = classe;
                         }
