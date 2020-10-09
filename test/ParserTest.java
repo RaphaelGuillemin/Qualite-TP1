@@ -5,6 +5,10 @@ public class ParserTest {
 
     static String folderPath = "resources";
 
+    /**
+     * Happy path. Test JavaFile name.
+     * @throws Exception
+     */
     public static void parseNewFileTest() throws Exception {
         // Prepare
         String filePath = "/testfolder/Main.java";
@@ -17,6 +21,10 @@ public class ParserTest {
         assert testJavaFile.getPath().equals(folderPath + filePath);
     }
 
+    /**
+     * Test basic file parsing.
+     * @throws Exception
+     */
     public static void parseMainFileTest() throws Exception {
         // Prepare
         String filePath = "/testfolder/Main.java";
@@ -42,6 +50,10 @@ public class ParserTest {
         assert testClass.getClasse_BC() == (float) classBC;
     }
 
+    /**
+     * Test interface parsing. Inteface should be considered as a class.
+     * @throws Exception
+     */
     public static void parseInterfaceTest() throws Exception {
         // Prepare
         String filePath = "/testfolder/interface.java";
@@ -72,6 +84,38 @@ public class ParserTest {
         assert Float.isInfinite(firstClass.getClasse_BC());
     }
 
+    /**
+     * Test enum parsing. Enum should be considered as a class.
+     * @throws Exception
+     */
+    public static void parseEnumTest() throws Exception {
+        // Prepare
+        String filePath = "/testfolder/enum.java";
+        File testFile = new File(folderPath + filePath);
+        String enumName = "ScaleName";
+        int enumLOC = 1;
+        int enumCLOC = 0;
+        double enumDC = 0;
+        double enumWMC = 0;
+
+        // Run
+        JavaFile testJavaFile = Parser.parseNewFile(testFile);
+
+        // Assert
+        Class enumClass = testJavaFile.getClasses().get(0);
+        assert enumClass.getName().equals(enumName);
+        assert enumClass.getName().equals(enumName);
+        assert enumClass.getClasse_LOC() == enumLOC;
+        assert enumClass.getClasse_CLOC() == enumCLOC;
+        assert enumClass.getClasse_DC() == enumDC;
+        assert enumClass.getWMC() == enumWMC;
+        assert Float.isNaN(enumClass.getClasse_BC());
+    }
+
+    /**
+     * Test method parsing.
+     * @throws Exception
+     */
     public static void parseMethodsTest() throws Exception {
 
     }
@@ -80,6 +124,7 @@ public class ParserTest {
         parseNewFileTest();
         parseMainFileTest();
         parseInterfaceTest();
+        parseEnumTest();
 
     }
 }
