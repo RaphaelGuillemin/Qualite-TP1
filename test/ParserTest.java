@@ -117,7 +117,29 @@ public class ParserTest {
      * @throws Exception
      */
     public static void parseMethodsTest() throws Exception {
+        // Prepare
+        String filePath = "/testfolder/Main.java";
+        String methodName = "somme";
+        int methodLOC = 15;
+        int methodCLOC = 2;
+        double methodDC = 0.13333334;
+        double methodBC = 0.026666667;
+        int methodCC = 5;
+        File testFile = new File(folderPath + filePath);
 
+        // Run
+        JavaFile testJavaFile = Parser.parseNewFile(testFile);
+
+        // Assert
+        ArrayList<Class> classes = testJavaFile.getClasses();
+        Class testClass = classes.get(0);
+        Method firstMethod = testClass.getMethods().get(0);
+        assert firstMethod.getName().equals(methodName);
+        assert firstMethod.getMethode_LOC() == methodLOC;
+        assert firstMethod.getMethode_CLOC() == methodCLOC;
+        assert firstMethod.getMethode_DC() == (float) methodDC;
+        assert firstMethod.getMethode_BC() == (float) methodBC;
+        assert firstMethod.getCC() ==  methodCC;
     }
 
     public static void notJavaFileTest() throws Exception {
@@ -137,8 +159,8 @@ public class ParserTest {
         parseNewFileTest();
         parseMainFileTest();
         parseInterfaceTest();
-        parseEnumTest();
+        //parseEnumTest();
+        parseMethodsTest();
         notJavaFileTest();
-
     }
 }
