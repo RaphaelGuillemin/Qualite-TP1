@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 
 public class Class {
-
     private int classe_LOC; // Nombre de lignes de code d’une classe
     private int classe_CLOC; // Nombre de lignes de code d’une classe qui contiennent des commentaires
     private float classe_DC; // Densité de commentaires pour une classe : classe_DC = classe_CLOC / classe_LOC
@@ -15,10 +14,10 @@ public class Class {
      * Constructeur
      * @param name Nom de la classe
      */
-    public Class(String name) {
+    public Class(String name, int ini_LOC, int ini_CLOC) {
         this.name = name;
-        this.classe_LOC = 0;
-        this.classe_CLOC = 0;
+        this.classe_LOC = ini_LOC;
+        this.classe_CLOC = ini_CLOC;
         this.classe_DC = 0;
         this.WMC = 0;
         this.classe_BC = 0;
@@ -65,10 +64,10 @@ public class Class {
     }
 
     /**
-     * @param classe_LOC Nombre de lignes de code d’une classe
+     * Incrémente le ombre de lignes de code d’une classe
      */
-    public void setClasse_LOC(int classe_LOC) {
-        this.classe_LOC = classe_LOC;
+    public void incrementClasse_LOC() {
+        this.classe_LOC++;
     }
 
     /**
@@ -79,10 +78,10 @@ public class Class {
     }
 
     /**
-     * @param classe_CLOC Nombre de lignes de code d’une classe qui contiennent des commentaires
+     * Incrémente le nombre de lignes de code d’une classe qui contiennent des commentaires
      */
-    public void setClasse_CLOC(int classe_CLOC) {
-        this.classe_CLOC = classe_CLOC;
+    public void incrementClasse_CLOC() {
+        this.classe_CLOC++;
     }
 
     /**

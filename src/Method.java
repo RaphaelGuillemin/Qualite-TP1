@@ -21,11 +21,11 @@ public class Method {
      * @param name nom de la méthode
      * @param args arguments de la méthodes
      */
-    public Method(String name, ArrayList<String> args) {
+    public Method(String name, ArrayList<String> args, int ini_LOC, int ini_CLOC) {
         this.name = name;
         this.args = args;
-        this.methode_LOC = 0;
-        this.methode_CLOC = 0;
+        this.methode_LOC = ini_LOC;
+        this.methode_CLOC = ini_CLOC;
         this.methode_DC = 0;
         this.methode_BC = 0;
         this.CC = 0;
@@ -78,11 +78,11 @@ public class Method {
         return methode_LOC;
     }
 
-    /*
-     * @param methode_LOC Nombre de lignes de code de la méthode
+    /**
+     * Incrémente le nombre de lignes de code de la méthode
      */
-    public void setMethode_LOC(int methode_LOC) {
-        this.methode_LOC = methode_LOC;
+    public void incrementMethode_LOC() {
+        this.methode_LOC++;
     }
 
     /**
@@ -93,10 +93,10 @@ public class Method {
     }
 
     /**
-     * @param methode_CLOC Nombre de lignes contenant des commentaires de la méthode
+     * Incrémente le nombre de lignes contenant des commentaires de la méthode
      */
-    public void setMethode_CLOC(int methode_CLOC) {
-        this.methode_CLOC = methode_CLOC;
+    public void incrementMethode_CLOC() {
+        this.methode_CLOC++;
     }
 
     /**
