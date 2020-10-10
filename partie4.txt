@@ -1,0 +1,57 @@
+PARTIE 4
+
+1. Les trois classes les moins bien commentées
+
+	D'abord, pour trouver les trois classes les moins bien commentées, nous avons classé le fichier classes.csv en ordre décroissant de classe_BC, puisque classe_BC est le degré selon lequel une classe est bien commentée. Nous aurions pu prendre les trois classes avec le plus faible classe_BC, mais notre choix ce n'est pas arrêté là. Nous avons décidé de prendre les classes ayant le classe_DC (densité de commentaire) le plus faible parmi les classes ayant le classe_BC le plus faible. Nous justifions ce choix par le fait que certaines classes avaient une valeur de classe_DC élevée (exemple 0.9308) et une valeur de classe_BC faible non pas car la classe était mal commentée, mais bien car la classe comportait des méthodes "complexes". Or, il y avait près d'un commentaire par ligne. Nous avons donc jugé que ces classes n'étaient pas les pires. Par ailleurs, nous avons rejeté les classes de test. Bien que certaines étaient mal commentées, nous pensons que la densité de commentaires d'une classe de test à moins d'impact sur la maintenabilité par exemple, que la densité de commentaires pour une classe régulière.
+
+Ainsi, notre choix s'est reposé sur les classes BorderArrangement (classe_DC = 0.2547, WMC = 59, classe_BC = 0.0043, 8e BC le plus bas), NumberTickUnitSource (classe_DC = 0.1830, WMC = 39, classe_BC = 0.0046, 10e BC le plus bas) et CrosshairOverlay (classe_DC = 0.3604, WMC = 57, classe_BC = 0.0063, 19e BC le plus bas).
+
+1.1 BorderArrangement (jfreechart-master\src\main\java\org\jfree\chart\block\BorderArrangement.java)
+	
+	Pour améliorer la densité de commentaires de la classe, nous proposons d'améliorer les commentaires de certaines méthodes. D'abord, la méthode arrange contient seulement de la Javadoc. Comme elle a un CC élevé, elle devrait contenir des commentaires au sujet de ces lignes "prédicats". Nous entendons par lignes "prédicats" les lignes étant représentées par un noeud prédicat dans le calcul de la complexité cyclomatique. Cette méthode contient une cascade de if, mais rien n'est expliqué. Même chose pour les méthodes arrangeNN, arrangeFN, arrangeRR et arrangeFF. Ces méthodes sont de complexité élevée et bénéficieraient sans doute de commentaires à l'intérieur de celles-ci. De plus, ces quatre dernières méthodes utilisent des valeurs magiques. on accède à des w[4],  on y ajoute des h[2], parfois des h[1]. Or, rien n'est expliqué. Nous mettrions l'emphase sur ces valeurs magiques dans les commentaires.
+
+1.2 NumberTickUnitSource (jfreechart-master\src\main\java\org\jfree\chart\axis\NumberTickUnitSource.java)
+
+	Contrairement à la classe précédente, dans laquelle chaque méthode avait de la JavaDoc, dans la classe NumberTickUnitSource, il y a plusieurs méthodes sans JavaDoc et sans commentaires. Nous proposons d'abord d'écrire de la Javadoc pour chaque méthode. Ensuite, pour les méthodes de complexité élevée, il serait intéressant de commentaire les lignes "prédicats". Ce qui pose problème également avec cette classe, c'est le fait qu'elle utilise également des valeurs magiques sans les expliquer. Par exemple, on retrouve plusieurs lignes comme:
+
+	if (factor == 2) {
+            factor = 5;
+            return true;
+        }
+
+Nous croyons que la variable factor devrait être expliquée. Il serait aussi pertinent de savoir ce que l'égalité avec 2 signifie et pourquoi ensuite, la valeur est changée à 5.
+
+1.3 CrosshairOverlay (jfreechart-master\src\main\java\org\jfree\chart\panel\CrosshairOverlay.java)
+
+	La classe CrosshairOverlay contient des méthodes complexes et surtout très longues qui contiennent seulement de la JavaDoc. Nous suggérons alors d'ajouter des commentaires expliquant les longues méthodes. Ces méthodes servent à dessiner et peindre, mais il serait intéressant de savoir étape par étape, ce qu'il passe. De plus, nous croyons que la JavaDoc n'est pas assez fournie, comparativement à d'autres classes. La plupart des méthodes sont seulement expliquées avec une seule ligne, par exemple : 
+	"Draws a crosshair vertically on the plot."
+tandis que la méthode est très longue.
+
+
+2. Les trois méthodes les moins bien commentées
+
+	Pour trouver les trois méthodes les moins bien commentées, nous avons classé en ordre décroissant les valeurs de la colonne methode_BC dans le fichier methodes.csv. Plusieurs méthodes ont un methode_BC de 0, soit une densité de commentaires nulle. Cela s'explique par le fait qu'elles ne contiennent aucun commentaire. Or, certaines de ces méthodes sont peu complexes ou très courtes, donc l'absence de commentaires semblait moins grave. Nous avons donc choisi des méthodes dont le CC était un peu plus élevé, et qui n'étaient pas trop courtes, mais avec un methode_BC de 0. Comme dans la section précédente, nous n'avons pas choisi de méthodes de test. Il est à noter que nous avons omis des méthodes ayant un CC plus élevé, simplement car cette valeur était expliquée par une cascade de if else. Or, ces if else étaient très parlant d'eux-mêmes, comme getTickLabelFormat, une méthode de la classe NumberTickUnitSource :
+	if (power == -4) {
+            return dfNeg4;
+        }
+        if (power == -3) {
+            return dfNeg3;
+        }
+        if (power == -2) {
+            return dfNeg2;
+        }
+
+Ainsi, notre choix s'est reposé sur createPlotPanel_ (methode_BC = 0, CC = 1, methode_LOC = 23, methode_CLC = 0), next_ (methode_BC = 0, CC = 5, methode_LOC = 19, methode_CLC = 0), previous_ (methode_BC = 0, CC = 5, methode_LOC = 19, methode_CLC = 0).
+
+2.1 createPlotPanel_ (jfreechart-master\src\main\java\org\jfree\chart\editor\DefaultPolarPlotEditor.java)
+
+	D'abord, cette méthode ne possède ni JavaDoc ni commentaires. Nous suggérons donc d'écrire de la JavaDoc et d'ajouter différents commentaires dans la fonction pour expliquer ce qu'il se passe. L'ordre d'appels de fonctions semble être important dans cette classe et il serait pertinent de l'expliquer.
+
+2.2 next_ (jfreechart-master\src\main\java\org\jfree\chart\axis\NumberTickUnitSource.java)
+
+	Nous avons déjà fait une critique de cette méthode dans la section 1.2. Cette méthode n'a ni JavaDoc ni commentaires. Il faudrait donc commencer au minimum par écrire dans la JavaDoc. Tel que mentionné en 1.2, cette méthode utilise des valeurs magiques. Il faudrait expliquer ce que représente la valeur de factor dans les différents ifs, et pourquoi une nouvelle valeur est réassignée à cette variable.
+
+2.3 previous_ (jfreechart-master\src\main\java\org\jfree\chart\axis\NumberTickUnitSource.java)
+
+	Cette méthode est pratiquement la même que next_ en 2.2. La différence est que l'assignation n'est pas la même selon la valeur de factor. Encore une fois, aucune JavaDoc, ni aucun commentaire pour expliquer les valeurs magiques de la variable factor. Il faudrait écrire de la JavaDoc et expliquer les valeurs magiques de factor. En plus, je crois qu'il serait pertinent d'expliquer pourquoi le message d'erreur est "We should never get here.". Pourquoi est-ce qu'on ne devrait jamais se rendre à cette valeur?
+	
