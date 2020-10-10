@@ -2,7 +2,7 @@
 ##### Dans le cadre du cours qualité de logiciel et métriques
  _Travail de Laura Bégin et de Raphaël Guillemin_
 
-# Exécution du projet
+## Exécution du projet
 Ouvrir dans le terminal le dossier contenant le fichier `Qualite-TP1.jar`. Exécuter la commande :
 ```
 java -jar Qualite-TP1.jar "<path-vers-dossier-contenant-fichiers-à-parser>"
@@ -14,7 +14,7 @@ java -jar Qualite-TP1.jar "tests"
 où "tests" est le path du dossier contenant les fichiers à parser.
 À la fin de l'exécution, le programme va produire les fichiers `classes.csv` et `methodes.csv` contenant les métriques des classes et des méthodes contenues dans les fichiers .java du dossier.
 
-# Précisions sur le projet
+## Précisions sur le projet
 Voici différentes définitions que nous avons utilisées lors de la programmation de notre parser.
 ###### Lignes d'une classe
 Toutes les lignes incluant les _import_, les _package_ jusqu'au `}` final.
