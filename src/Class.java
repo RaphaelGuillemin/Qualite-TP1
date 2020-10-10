@@ -1,14 +1,24 @@
 import java.util.ArrayList;
 
+/**
+ * Représente une classe Java.
+ */
 public class Class {
-    private int classe_LOC; // Nombre de lignes de code d’une classe
-    private int classe_CLOC; // Nombre de lignes de code d’une classe qui contiennent des commentaires
-    private float classe_DC; // Densité de commentaires pour une classe : classe_DC = classe_CLOC / classe_LOC
-    private int WMC; // Weighted methods per class : somme pondérée des complexités des méthodes de la classe
-    private float classe_BC; // Degré selon lequel une méthode est bien commentée : classe_BC = classe_DC/WMC
+    /** Nombre de lignes de code d’une classe */
+    private int classe_LOC;
+    /** Nombre de lignes de code d’une classe qui contiennent des commentaires */
+    private int classe_CLOC;
+    /** Densité de commentaires pour une classe : classe_DC = classe_CLOC / classe_LOC */
+    private float classe_DC;
+    /** Weighted methods per class : somme pondérée des complexités des méthodes de la classe */
+    private int WMC;
+    /** Degré selon lequel une méthode est bien commentée : classe_BC = classe_DC/WMC */
+    private float classe_BC;
 
-    private ArrayList<Method> methods = new ArrayList<Method>(); // Méthodes de la classe
-    private String name; // Nom de la classe
+    /** Méthodes de la classe */
+    private ArrayList<Method> methods = new ArrayList<Method>();
+    /** Nom de la classe */
+    private String name;
 
     /**
      * Constructeur

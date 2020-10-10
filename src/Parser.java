@@ -6,12 +6,16 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Parser de fichiers Java.
+ */
 public class Parser {
-    // Ensemble des fichiers java du dossier
+    /** Ensemble des fichiers java du dossier */
     static private ArrayList<JavaFile> javaFiles = new ArrayList<JavaFile>();
 
-    /*
-     * @param args A string of the path to the folder containing java files
+    /**
+     * Point d'entrée du programme
+     * @param args Path vers le dossier contenant les fichiers Java
      */
     public static void main(String[] args) throws Exception {
         // Si aucun argument passé, ne rien faire
@@ -29,6 +33,11 @@ public class Parser {
         createCSVFiles();
     }
 
+    /**
+     * Appelle la méthode parseNewFile récursivement sur les fichiers d'un dossier Java
+     * @param dir Dossier contenant les fichiers Java, peut contenir des sous-dossiers
+     * @throws Exception
+     */
     public static void recursiveParseFiles(File dir) throws Exception {
         try {
             File[] files = dir.listFiles();
@@ -54,9 +63,10 @@ public class Parser {
         }
     }
 
-    /*
-     * @param fichier java souhaité
-     * @return instance de JavaFile du fichier analysé
+    /**
+     * Parse un fichier Java
+     * @param file Fichier java à parser
+     * @return Instance de JavaFile du fichier analysé
      */
     public static JavaFile parseNewFile(File file) throws Exception{
         JavaFile javaFile = new JavaFile(file.getPath());
@@ -317,6 +327,14 @@ public class Parser {
         return javaFile;
     }
 
+    /**
+     * Retire la partie commentaire d'une ligne, et actualise les comptes de commentaires pour la classe et la méthode
+     * @param line Ligne contenant un commentaire
+     * @param classe Classe dans laquelle se trouve la ligne
+     * @param outterClass Classe externe, utilisé si la ligne se trouve dans une classe imbriquée
+     * @param method Méthode dans laquelle se trouve la ligne
+     * @return La ligne de code sans commentaire
+     */
     public static String getNonCommentLine(String line, Class classe, Class outterClass, Method method){
         String[] lineArray = line.trim().split("//{2}|//*");
         String nonCommentLine = lineArray[0].trim(); // Enlève le whitespace avant la ligne
@@ -338,8 +356,9 @@ public class Parser {
         return nonCommentLine;
     }
 
-    /*
-     * @param ligne qui contient le nom et les arguments de la méthode
+    /**
+     * Retourne le nom et les arguments d'une méthode Java
+     * @param line Ligne contenant le nom et les arguments de la méthode
      * @return Arraylist de [[nom], [arguments]]
      */
     public static ArrayList<ArrayList<String>> getNameAndArgs(String line){
@@ -363,7 +382,8 @@ public class Parser {
     }
 
     /*
-     * Créé les fichiers csv contenant toutes les informations des fichiers java
+     * Créé les fichiers csv classes et methods contenant toutes les informations des fichiers Java
+     * dont leurs métriques respectives.
      */
     public static void createCSVFiles(){
         // Classes

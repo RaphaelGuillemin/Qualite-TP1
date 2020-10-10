@@ -1,20 +1,33 @@
 import java.util.ArrayList;
 
+/**
+ * Représente une méthode d'une classe Java.
+ */
 public class Method {
-
-    private String name;  // Nom de la méthode
-    private ArrayList<String> args = new ArrayList<String>(); // Arguments de la méthode
-    private int methode_LOC; // Nombre de lignes de code d’une méthode
-    private int methode_CLOC; // Nombre de lignes de code d’une méthode qui contiennent des commentaires
-    private float methode_DC; // Densité de commentaires pour une méthode : methode_DC = methode_CLOC / methode_LOC
-    private float methode_BC; // Degré selon lequel une méthode est bien commentée : methode_BC = methode_DC/CC
+    /** Nom de la méthode */
+    private String name;
+    /** Arguments de la méthode */
+    private ArrayList<String> args = new ArrayList<String>();
+    /** Nombre de lignes de code d’une méthode */
+    private int methode_LOC;
+    /** Nombre de lignes de code d’une méthode qui contiennent des commentaires */
+    private int methode_CLOC;
+    /** Densité de commentaires pour une méthode : methode_DC = methode_CLOC / methode_LOC */
+    private float methode_DC;
+    /** Degré selon lequel une méthode est bien commentée : methode_BC = methode_DC/CC */
+    private float methode_BC;
 
     // Attributs utilisés pour le calcul de la complexité cyclomatique (CC)
-    private int CC; // Complexité cyclomatique de McCabe
-    private int noOfIfs; // Nombre de clauses if dans la méthode
-    private int noOfSwitchCases; // Nombre de cases dans les blocs switch de la méthodes
-    private int noOfWhileLoops; // Nombre de bloc while ou do-while de la méthode
-    private int noOfForLoops; // Nombre de boucles for dans la méthode
+    /** Complexité cyclomatique de McCabe */
+    private int CC;
+    /** Nombre de clauses if dans la méthode */
+    private int noOfIfs;
+    /** Nombre de cases dans les blocs switch de la méthodes */
+    private int noOfSwitchCases;
+    /** Nombre de bloc while ou do-while de la méthode */
+    private int noOfWhileLoops;
+    /** Nombre de boucles for dans la méthode */
+    private int noOfForLoops;
 
     /**
      * Constructeur
